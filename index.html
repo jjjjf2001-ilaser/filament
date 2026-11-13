@@ -637,19 +637,16 @@ const fmtD=t=>{const d=new Date(t),p=n=>String(n).padStart(2,'0');
   return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());};
 const dmy=t=>{const d=new Date(t),p=n=>String(n).padStart(2,'0');
   return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear();};
-const HEAD_BATCH=['Barcode','Filament','Qty','Date','方向','Box SKU','色号','箱数','单价USD','小计USD'];
+const HEAD_BATCH=['Barcode','Filament','Qty'];
 function batchRows(){
   const out=[HEAD_BATCH];
-  sessionRows().forEach(o=>{const r=o.r, q=Math.abs(o.qty);
-    out.push([r.e,sheetName(r),q,dmy(o.last),o.qty>0?'Scan IN':'Scan OUT',r.k,r.cc,
-      (q/10).toFixed(q%10?1:0),r.p.toFixed(2),(q*r.p).toFixed(2)]);});
+  sessionRows().forEach(o=>out.push([o.r.e,sheetName(o.r),o.qty]));
   return out;
 }
-const HEAD_STOCK=['Barcode','Filament','Current stock','Box SKU','色号','箱数','单价USD','货值USD'];
+const HEAD_STOCK=['Barcode','Filament','Current stock'];
 function stockRows(){
   const out=[HEAD_STOCK];
-  CATALOG.forEach(r=>{const n=qtyOf(r); if(!n) return;
-    out.push([r.e,sheetName(r),n,r.k,r.cc,(n/10).toFixed(n%10?1:0),r.p.toFixed(2),(n*r.p).toFixed(2)]);});
+  CATALOG.forEach(r=>{const n=qtyOf(r); if(n) out.push([r.e,sheetName(r),n]);});
   return out;
 }
 const HEAD_LOG=['日期时间','方向','变动(卷)','Filament','Barcode','Box SKU','操作后库存','来源'];
