@@ -1,12 +1,17 @@
-# iLaser Filament 库存
+# iLaser Filament Stock
 
-Bambu Lab 耗材库存扫描与查找工具（PLA Basic + PLA Matte，106 个 SKU）。
+Bambu Lab filament inventory scanner and lookup (PLA Basic + PLA Matte, 106 SKUs).
 
-**使用地址：** https://jjjjf2001-ilaser.github.io/filament/
+**Open it here:** https://jjjjf2001-ilaser.github.io/filament/
 
-- **扫描** — 摄像头实时识别。整箱扫 QR（SKU，+10 卷），单卷扫条码（EAN，+1 卷）；可切换入库/出库
-- **查找** — 按材料、带轴/不带轴、颜色定位，大字显示箱子标签上的 SKU
-- **库存** — 搜索、筛选、调整数量，导出 CSV / 复制到 Excel
-- **记录** — 全部出入库流水
+- **Scan** — live camera. Carton QR reads the SKU and adds 10 spools; a single spool barcode reads the EAN and adds 1. Switch between Scan IN and Scan OUT.
+- **Find** — pick material and spool/refill, tap a colour swatch, and the carton-label SKU shows in large type.
+- **Stock** — search, filter, adjust, export CSV (Barcode / Filament / Qty) or copy straight into a spreadsheet.
+- **Log** — every movement.
 
-库存数据存在浏览器本地（localStorage），请定期导出备份。
+Exports use the same naming as the iLaser Main Filament Inventory sheet
+("PLA Basic w/ Spool - Black"). "Copy barcodes" gives one EAN per spool,
+ready to paste into the Barcode column of the Scan IN / Scan OUT sheets.
+
+Stock is held in the browser's local storage — export a backup before
+switching device or clearing data.

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f1216">
-<title>iLaser Filament 库存</title>
+<title>iLaser Filament Stock</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--g:#00AE42;--g-d:#00913a;--bg:#f4f5f7;--card:#fff;--ink:#15181d;--mut:#6b7280;
@@ -145,13 +145,13 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
 <header>
  <div class="hd">
   <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3 6.5 3.6L12 11.5 5.5 7.9 12 4.3ZM5 9.6l6 3.3v6.8l-6-3.3V9.6Zm8 10.1v-6.8l6-3.3v6.8l-6 3.3Z"/></svg></div>
-  <div style="flex:1"><h1>Filament 库存</h1><div class="sub" id="sub">iLaser · Bambu Lab PLA</div></div>
+  <div style="flex:1"><h1>Filament Stock</h1><div class="sub" id="sub">iLaser · Bambu Lab PLA</div></div>
  </div>
  <div class="tabs" role="tablist">
-  <button class="tab" role="tab" aria-selected="true" data-t="scan">扫描</button>
-  <button class="tab" role="tab" aria-selected="false" data-t="find">查找</button>
-  <button class="tab" role="tab" aria-selected="false" data-t="stock">库存</button>
-  <button class="tab" role="tab" aria-selected="false" data-t="log">记录</button>
+  <button class="tab" role="tab" aria-selected="true" data-t="scan">Scan</button>
+  <button class="tab" role="tab" aria-selected="false" data-t="find">Find</button>
+  <button class="tab" role="tab" aria-selected="false" data-t="stock">Stock</button>
+  <button class="tab" role="tab" aria-selected="false" data-t="log">Log</button>
  </div>
 </header>
 <div class="wrap">
@@ -160,67 +160,67 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
   <video id="video" playsinline muted></video>
   <div class="recticle" id="ret" hidden></div>
   <div class="hitmark" id="hit"></div>
-  <div class="lockbadge" id="lockbadge">已记录 · 移开镜头再扫下一个</div>
+  <div class="lockbadge" id="lockbadge">Counted · move away, then scan the next</div>
   <div class="camtop" id="camtop" hidden>
-   <button id="torch" hidden>手电筒</button><div class="sp"></div><button id="stopcam">停止</button>
+   <button id="torch" hidden>Torch</button><div class="sp"></div><button id="stopcam">Stop</button>
   </div>
   <div class="zoomwrap" id="zoomwrap" hidden>
-   <span>放大</span><input type="range" id="zoom" min="1" max="4" step="0.1" value="1"><span id="zoomv">1.0×</span>
+   <span>Zoom</span><input type="range" id="zoom" min="1" max="4" step="0.1" value="1"><span id="zoomv">1.0×</span>
   </div>
   <div class="off" id="camoff">
-   <div><b>摄像头扫码</b><span id="camsg">对准箱子上的 QR 或小盒上的条码，自动连续识别</span>
-   <br><button class="startb" id="startcam">开启摄像头</button></div>
+   <div><b>Barcode scanner</b><span id="camsg">Point at the QR on a carton or the barcode on a single spool — it reads continuously</span>
+   <br><button class="startb" id="startcam">Start camera</button></div>
   </div>
  </div>
  <div class="card" style="display:flex;gap:8px;align-items:center;padding:11px 13px">
   <button id="shotb" style="flex:1;border:1.5px solid var(--line);background:var(--card);font:inherit;
-   font-size:13px;font-weight:600;padding:10px;border-radius:10px;cursor:pointer">扫不出来？拍一张高清照片识别</button>
+   font-size:13px;font-weight:600;padding:10px;border-radius:10px;cursor:pointer">Not reading? Take a photo instead</button>
   <input type="file" id="shotf" accept="image/*" capture="environment" hidden>
  </div>
  <div class="card">
   <div class="seg" id="modeseg">
-   <button data-q="10" aria-pressed="true">整箱<small>SKU · 10 卷</small></button>
-   <button data-q="1" aria-pressed="false">单卷<small>EAN · 1 卷</small></button>
+   <button data-q="10" aria-pressed="true">Carton<small>SKU · 10 spools</small></button>
+   <button data-q="1" aria-pressed="false">Single<small>EAN · 1 spool</small></button>
   </div>
   <div class="dir" id="dirseg">
-   <button data-d="1" aria-pressed="true">入库</button>
-   <button class="out" data-d="-1" aria-pressed="false">出库</button>
+   <button data-d="1" aria-pressed="true">Scan IN</button>
+   <button class="out" data-d="-1" aria-pressed="false">Scan OUT</button>
   </div>
-  <label class="fl" for="code">或手动输入 / 扫码枪</label>
-  <input type="text" id="code" placeholder="SKU 或 EAN" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
-  <div class="hint">识别成功会震动提示，同一个码 3 秒内不会重复计数。</div>
+  <label class="fl" for="code">Or type it / use a barcode gun</label>
+  <input type="text" id="code" placeholder="SKU or EAN" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+  <div class="hint">A good read vibrates and beeps. The same code will not be counted twice until you move the camera away.</div>
   <div id="rawline" style="margin-top:9px;padding:8px 10px;background:#f1f3f5;border-radius:9px;
        font-size:11px;color:#475569;word-break:break-all;line-height:1.5;display:none">
-   <b style="color:#15181d">上次识别到的原始内容</b><br><span id="rawtxt" style="font-family:ui-monospace,Menlo,Consolas,monospace"></span></div>
+   <b style="color:#15181d">Last code read</b><br><span id="rawtxt" style="font-family:ui-monospace,Menlo,Consolas,monospace"></span></div>
  </div>
  <div id="feedback"></div>
  <div class="card" id="recentcard" hidden>
   <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
-   <label class="fl" style="margin:0;flex:1">本批次</label>
+   <label class="fl" style="margin:0;flex:1">This batch</label>
    <span id="sessum" style="font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums"></span>
   </div>
   <div id="recent"></div>
   <div class="tools" style="margin-top:12px">
-   <button id="sx-in" style="border-color:#bbf7d0;background:#f0fdf4;color:var(--g-d)">复制条码 → Scan IN</button>
-   <button id="sx-out" hidden style="border-color:#fecdd3;background:#fff1f2;color:#be123c">复制条码 → Scan OUT</button>
-   <button id="sx-csv">导出 CSV</button>
-   <button id="sx-copy">复制明细</button>
-   <button id="sx-share" hidden>分享</button>
-   <button id="sx-clear" style="color:#be123c;border-color:#fecdd3">结束批次</button>
+   <button id="sx-in" style="border-color:#bbf7d0;background:#f0fdf4;color:var(--g-d)">Copy barcodes → Scan IN</button>
+   <button id="sx-out" hidden style="border-color:#fecdd3;background:#fff1f2;color:#be123c">Copy barcodes → Scan OUT</button>
+   <button id="sx-csv">Export CSV</button>
+   <button id="sx-copy">Copy table</button>
+   <button id="sx-share" hidden>Share</button>
+   <button id="sx-clear" style="color:#be123c;border-color:#fecdd3">End batch</button>
   </div>
-  <div class="hint">「复制条码」按每卷一行输出 EAN，粘到 Google 表 Scan IN / Scan OUT 的 <b>Barcode 列</b>（A 列），数量列默认 1，其余公式自动算。不要粘到 B 或 F 列，那是公式。</div>
+  <div class="hint">Copy barcodes gives one EAN per spool. Paste it into the <b>Barcode column (A)</b> of the Scan IN / Scan OUT sheet — Qty defaults to 1 and the formula columns fill themselves. Do not paste into column B or F; those are formulas.</div>
  </div>
 </section>
 <section id="s-find">
  <div class="card">
-  <input type="search" id="fq" placeholder="直接打颜色，比如 black / 黑 / 11200" autocomplete="off">
+  <input type="search" id="fq" placeholder="Type a colour, e.g. black / 11200 / A00-K0" autocomplete="off">
   <div class="filters" id="fmat">
    <button class="chip" data-v="PLA Basic" aria-pressed="true">PLA Basic</button>
    <button class="chip" data-v="PLA Matte" aria-pressed="false">PLA Matte</button>
   </div>
   <div class="filters" id="fsp">
-   <button class="chip" data-v="1" aria-pressed="true">带轴 SPL</button>
-   <button class="chip" data-v="0" aria-pressed="false">不带轴 SPLFREE</button>
+   <button class="chip" data-v="1" aria-pressed="true">With spool</button>
+   <button class="chip" data-v="0" aria-pressed="false">Refill</button>
   </div>
  </div>
  <div class="card"><div class="grid" id="fgrid"></div></div>
@@ -228,29 +228,29 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
 
 <section id="s-stock">
  <div class="stat">
-  <div><b id="st-spools">0</b><span>总卷数</span></div>
-  <div><b id="st-skus">0</b><span>有货 SKU</span></div>
-  <div><b id="st-boxes">0</b><span>约合箱数</span></div>
+  <div><b id="st-spools">0</b><span>Spools</span></div>
+  <div><b id="st-skus">0</b><span>SKUs in stock</span></div>
+  <div><b id="st-boxes">0</b><span>Cartons</span></div>
  </div>
  <div class="card">
-  <input type="search" id="q" placeholder="搜颜色 / 色号 / SKU / EAN…" autocomplete="off">
+  <input type="search" id="q" placeholder="Search colour / code / SKU / EAN…" autocomplete="off">
   <div class="filters" id="filters">
-   <button class="chip" data-f="instock" aria-pressed="true">只看有货</button>
+   <button class="chip" data-f="instock" aria-pressed="true">In stock only</button>
    <button class="chip" data-f="basic" aria-pressed="false">PLA Basic</button>
    <button class="chip" data-f="matte" aria-pressed="false">PLA Matte</button>
-   <button class="chip" data-f="spool" aria-pressed="false">带轴</button>
-   <button class="chip" data-f="nospool" aria-pressed="false">不带轴</button>
+   <button class="chip" data-f="spool" aria-pressed="false">With spool</button>
+   <button class="chip" data-f="nospool" aria-pressed="false">Refill</button>
   </div>
  </div>
  <div class="card"><div id="list"></div></div>
- <div class="card"><label class="fl">导出 / 备份</label><div class="tools">
-  <button id="exp">库存快照 CSV</button>
-  <button id="exp-copy">库存复制到 Excel</button>
-  <button id="exp-log">全部流水 CSV</button>
-  <label>导入备份<input type="file" id="imp" accept=".csv,text/csv" hidden></label>
- </div><div class="hint">库存存在这台手机/电脑的浏览器里。换设备或清缓存前先导出备份。CSV 带 BOM，Excel 打开中文不乱码。</div></div>
+ <div class="card"><label class="fl">Export / backup</label><div class="tools">
+  <button id="exp">Stock CSV</button>
+  <button id="exp-copy">Copy stock table</button>
+  <button id="exp-log">Full log CSV</button>
+  <label>Restore backup<input type="file" id="imp" accept=".csv,text/csv" hidden></label>
+ </div><div class="hint">Stock lives in this browser only. Export a backup before changing device or clearing data.</div></div>
 </section>
-<section id="s-log"><div class="card"><div id="loglist"><div class="empty">暂无记录</div></div></div></section>
+<section id="s-log"><div class="card"><div id="loglist"><div class="empty">No movements yet</div></div></div></section>
 </div>
 <dialog id="dlg"><div class="dlg" id="dlgbody"></div></dialog>
 <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
@@ -294,7 +294,7 @@ function lookup(raw){
   return {r:null,kind:/^\d{12,14}$/.test(s)?'ean':'sku',raw:s};
 }
 const swatch=r=>r.h?`<div class="sw" style="background:${r.h}"></div>`:`<div class="sw multi"></div>`;
-const spoolPill=r=>r.s?'<span class="pill spool">带轴</span>':'<span class="pill nospool">无轴</span>';
+const spoolPill=r=>r.s?'<span class="pill spool">SPOOL</span>':'<span class="pill nospool">REFILL</span>';
 
 /* ---------- feedback ---------- */
 const fb=$('#feedback');
@@ -320,19 +320,19 @@ function handle(raw,how){
   const res=lookup(raw); if(!res) return;
   if(!res.r){
     beep(true);
-    fb.innerHTML=`<div class="toast err"><div class="tt"><b>没找到这个编码</b>
-      <span>${esc(res.raw)} — 目前只收录 PLA Basic / PLA Matte</span></div></div>`;
+    fb.innerHTML=`<div class="toast err"><div class="tt"><b>Code not recognised</b>
+      <span>${esc(res.raw)} — only PLA Basic and PLA Matte are loaded so far</span></div></div>`;
     return;
   }
   const r=res.r, expect=res.kind==='ean'?1:10;
   if(expect!==mode){
     beep(true);
     fb.innerHTML=`<div class="toast warn">${swatch(r)}<div class="tt">
-      <b>扫到的是${res.kind==='ean'?'单卷条码':'整箱编码'}，当前是「${mode===10?'整箱':'单卷'}」模式</b>
+      <b>That is a ${res.kind==='ean'?'single-spool barcode':'carton code'}, but the mode is set to ${mode===10?'Carton':'Single'}</b>
       <span>${esc(r.m)} · ${esc(r.c)}</span>
       <div style="display:flex;gap:7px;margin-top:9px">
-        <button class="undo" data-go="10">按整箱 ${dir>0?'+':'−'}10</button>
-        <button class="undo" data-go="1">按单卷 ${dir>0?'+':'−'}1</button>
+        <button class="undo" data-go="10">Count as carton ${dir>0?'+':'−'}10</button>
+        <button class="undo" data-go="1">Count as single ${dir>0?'+':'−'}1</button>
       </div></div></div>`;
     fb.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>commit(r,Number(b.dataset.go),how));
     return;
@@ -344,9 +344,9 @@ function commit(r,q,how){
   beep(blocked); flash();
   if(navigator.vibrate) try{navigator.vibrate(blocked?[60,40,60]:40)}catch(e){}
   fb.innerHTML=`<div class="toast ${blocked?'warn':'ok'}">${swatch(r)}<div class="tt">
-    <b>${actual>0?'+':''}${actual} 卷 · ${esc(r.c)}</b>
-    <span>${esc(r.m)} ${r.cc?'| '+r.cc:''} ${r.s?'| 带轴':'| 无轴'} — 现有 ${next} 卷${blocked?'（不足，已扣到 0）':''}</span>
-    </div><button class="undo" id="undo">撤销</button></div>`;
+    <b>${actual>0?'+':''}${actual} · ${esc(r.c)}</b>
+    <span>${esc(r.m)} ${r.cc?'| '+r.cc:''} ${r.s?'| With spool':'| Refill'} — now ${next} spool${next===1?'':'s'}${blocked?' (not enough, floored at 0)':''}</span>
+    </div><button class="undo" id="undo">Undo</button></div>`;
   $('#undo').onclick=()=>{move(r,-actual,'undo');fb.innerHTML='';recent.shift();saveSession();drawRecent();};
   recent.unshift({r,d:actual,t:Date.now()}); saveSession(); drawRecent();
 }
@@ -364,13 +364,13 @@ function drawRecent(){
   const pos=rows.filter(o=>o.qty>0).reduce((s,o)=>s+o.qty,0);
   const neg=rows.filter(o=>o.qty<0).reduce((s,o)=>s-o.qty,0);
   $('#sessum').textContent = rows.length
-    ? rows.length+' 个 SKU'+(pos?' · 入 '+pos+' 卷':'')+(neg?' · 出 '+neg+' 卷':'') : '';
+    ? rows.length+(rows.length===1?' SKU':' SKUs')+(pos?' · IN '+pos:'')+(neg?' · OUT '+neg:'') : '';
   const ob=$('#sx-out'); if(ob) ob.hidden = !neg;
   const ib=$('#sx-in'); if(ib) ib.hidden = !pos;
   $('#recent').innerHTML=recent.slice(0,20).map(x=>`<div class="logrow">
     <div class="d ${x.d>0?'p':'m'}">${x.d>0?'+':''}${x.d}</div>${swatch(x.r)}
-    <div class="n">${esc(x.r.c)} <span style="color:var(--mut);font-size:11px">${esc(x.r.m.replace('PLA ',''))}${x.r.s?' · 带轴':''}</span></div>
-    <div class="t">${new Date(x.t).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
+    <div class="n">${esc(x.r.c)} <span style="color:var(--mut);font-size:11px">${esc(x.r.m.replace('PLA ',''))}${x.r.s?' · spool':' · refill'}</span></div>
+    <div class="t">${new Date(x.t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
 }
 
 /* ---------- camera ---------- */
@@ -395,10 +395,10 @@ function onCode(t){
 }
 async function startCam(){
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    $('#camsg').textContent='这个浏览器不支持摄像头，请用手动输入。'; return;
+    $('#camsg').textContent='This browser cannot open a camera. Type the code instead.'; return;
   }
   const native = ('BarcodeDetector' in window);
-  if(!native && !window.ZXing){ $('#camsg').textContent='扫码库没加载成功，检查网络后刷新。'; return; }
+  if(!native && !window.ZXing){ $('#camsg').textContent='The scanning library did not load. Check the connection and refresh.'; return; }
   try{
     if(native){
       const stream=await navigator.mediaDevices.getUserMedia(
@@ -434,7 +434,7 @@ async function startCam(){
       } }catch(e){}
     try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
   }catch(e){
-    $('#camsg').textContent='打不开摄像头：'+(e&&e.message||e)+'。需要 HTTPS，并在浏览器里允许相机权限。';
+    $('#camsg').textContent='Could not open the camera: '+(e&&e.message||e)+'. It needs HTTPS and camera permission.';
   }
 }
 function stopCam(){
@@ -452,14 +452,14 @@ $('#startcam').onclick=startCam;
 $('#stopcam').onclick=stopCam;
 let torchOn=false;
 $('#torch').onclick=async()=>{ if(!track)return; torchOn=!torchOn;
-  try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); $('#torch').textContent=torchOn?'关灯':'手电筒'; }catch(e){} };
+  try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); $('#torch').textContent=torchOn?'Torch off':'Torch'; }catch(e){} };
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) stopCam(); });
 
 /* ---------- high-res photo fallback ---------- */
 $('#shotb').onclick=()=>$('#shotf').click();
 $('#shotf').onchange=async e=>{
   const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
-  fb.innerHTML='<div class="toast warn"><div class="tt"><b>识别中…</b></div></div>';
+  fb.innerHTML='<div class="toast warn"><div class="tt"><b>Reading…</b></div></div>';
   let text=null;
   const url=URL.createObjectURL(f);
   try{
@@ -491,7 +491,7 @@ $('#shotf').onchange=async e=>{
   if(text){ $('#rawline').style.display='block'; $('#rawtxt').textContent=text;
     lastCode=text; lastAt=Date.now(); handle(text,'photo'); }
   else { beep(true);
-    fb.innerHTML='<div class="toast err"><div class="tt"><b>照片里没识别出条码</b><span>把 QR 拍满画面、对正、别晃；或者直接手输下面的 SKU</span></div></div>'; }
+    fb.innerHTML='<div class="toast err"><div class="tt"><b>No barcode found in that photo</b><span>Fill the frame with the code, hold it square and steady — or type the SKU below</span></div></div>'; }
 };
 
 /* ---------- manual input ---------- */
@@ -540,20 +540,12 @@ function render(){
     return `<div class="row" data-id="${r.id}">${swatch(r)}
       <div class="info"><div class="nm">${esc(r.c)} ${r.cc?`<span style="color:var(--mut);font-weight:500;font-size:12px">${r.cc}</span>`:''} ${spoolPill(r)}</div>
       <div class="meta">${esc(r.m)} · ${r.k}</div></div>
-      <div class="qty ${n?'':'zero'}"><b>${n}</b><i>${n>=10?Math.floor(n/10)+'箱'+(n%10?'+'+n%10:''):'卷'}</i></div></div>`;
+      <div class="qty ${n?'':'zero'}"><b>${n}</b><i>${n>=10?Math.floor(n/10)+' ctn'+(n%10?'+'+n%10:''):'spools'}</i></div></div>`;
   }).join('')
-  :`<div class="empty">${F.instock?'这些条件下没有库存。<br>取消「只看有货」可浏览全部 '+CATALOG.length+' 个 SKU。':'没有匹配的 SKU。'}</div>`;
+  :`<div class="empty">${F.instock?'Nothing in stock under these filters.<br>Turn off “In stock only” to browse all '+CATALOG.length+' SKUs.':'No matching SKU.'}</div>`;
 }
 /* ---------- find tab ---------- */
-const CN = {black:'黑',white:'白',red:'红',blue:'蓝',green:'绿',yellow:'黄',orange:'橙',
- purple:'紫',pink:'粉',gray:'灰',grey:'灰',brown:'棕',gold:'金',silver:'银',cyan:'青',
- beige:'米',bronze:'古铜',magenta:'品红'};
-function cnHay(r){
-  let x='';
-  const lc=r.c.toLowerCase();
-  for(const k in CN) if(lc.includes(k)) x+=CN[k];
-  return x;
-}
+function cnHay(r){ return r.k; }
 let fMat='PLA Basic', fSp='1';
 $('#fmat').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;fMat=b.dataset.v;
   $$('#fmat .chip').forEach(c=>c.setAttribute('aria-pressed',c===b));renderFind();};
@@ -572,7 +564,7 @@ function renderFind(){
       ${r.h?`<div class="sw" style="background:${r.h}"></div>`:`<div class="sw multi"></div>`}
       <div class="gq ${n?'':'z'}">${n}</div>
       <div class="gn">${esc(r.c)}</div><div class="gc">${r.cc||''}</div></div>`;
-  }).join('') : '<div class="empty">这个组合下没有这个颜色。<br>换一下上面的材料或带轴筛选。</div>';
+  }).join('') : '<div class="empty">No colour matches.<br>Try the other material or spool filter above.</div>';
 }
 $('#fgrid').onclick=e=>{const g=e.target.closest('.gi');if(!g)return;openD(CATALOG[Number(g.dataset.id)]);};
 
@@ -585,22 +577,22 @@ function openD(r){
   $('#dlgbody').innerHTML=`<div style="display:flex;gap:12px;align-items:center">
     ${r.h?`<div class="sw" style="background:${r.h};width:48px;height:48px"></div>`:`<div class="sw multi" style="width:48px;height:48px"></div>`}
     <div style="flex:1"><h3>${esc(r.c)}</h3>
-    <div style="font-size:12.5px;color:var(--mut);margin-top:2px">${esc(r.m)} ${r.cc?'· 色号 '+r.cc:''} ${r.s?'· 带轴 SPL':'· 不带轴 SPLFREE'}</div></div>
-    <div class="qty ${n?'':'zero'}"><b style="font-size:26px">${n}</b><i>卷</i></div></div>
+    <div style="font-size:12.5px;color:var(--mut);margin-top:2px">${esc(r.m)} ${r.cc?'· Colour '+r.cc:''} ${r.s?'· With spool (SPL)':'· Refill (SPLFREE)'}</div></div>
+    <div class="qty ${n?'':'zero'}"><b style="font-size:26px">${n}</b><i>spools</i></div></div>
     <div style="background:#f8fafc;border:1px solid var(--line);border-radius:13px;padding:12px 10px;margin-top:14px">
-      <div style="font-size:10.5px;font-weight:600;color:var(--mut);letter-spacing:.05em;text-align:center">箱子标签上找这串</div>
+      <div style="font-size:10.5px;font-weight:600;color:var(--mut);letter-spacing:.05em;text-align:center">LOOK FOR THIS ON THE CARTON LABEL</div>
       <div class="bigsku">${short}</div>
       <div class="fullsku">${r.k}</div>
     </div>
-    <button class="copyb" id="cp">复制完整 SKU</button>
-    <div class="dm">单卷 EAN（小盒条码）<code>${r.e}</code><br>
-    单价 US$${r.p.toFixed(2)} · 库存 ${n>=10?Math.floor(n/10)+' 箱 + '+(n%10)+' 卷':n+' 卷'}</div>
+    <button class="copyb" id="cp">Copy full SKU</button>
+    <div class="dm">Single-spool EAN <code>${r.e}</code><br>
+    US$${r.p.toFixed(2)} each · ${n>=10?Math.floor(n/10)+' carton(s) + '+(n%10)+' spools':n+' spools'}</div>
     <div class="adj"><button class="minus" data-a="-10">−10</button><button class="minus" data-a="-1">−1</button>
     <button class="plus" data-a="1">+1</button><button class="plus" data-a="10">+10</button></div>
-    <button class="close">关闭</button>`;
+    <button class="close">Close</button>`;
   const cp=$('#cp'); if(cp) cp.onclick=async()=>{
-    try{ await navigator.clipboard.writeText(r.k); cp.textContent='已复制 ✓';
-      setTimeout(()=>{cp.textContent='复制完整 SKU'},1600); }catch(e){ cp.textContent='复制失败，长按上面那行选中'; } };
+    try{ await navigator.clipboard.writeText(r.k); cp.textContent='Copied ✓';
+      setTimeout(()=>{cp.textContent='Copy full SKU'},1600); }catch(e){ cp.textContent='Copy failed — long-press the line above'; } };
   $('#dlgbody').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{move(r,Number(b.dataset.a),'manual');openD(r);});
   $('#dlgbody .close').onclick=()=>dlg.close();
   if(!dlg.open) dlg.showModal();
@@ -608,11 +600,11 @@ function openD(r){
 /* ---------- log ---------- */
 function renderLog(){
   const el=$('#loglist');
-  if(!logs.length){el.innerHTML='<div class="empty">暂无记录</div>';return;}
+  if(!logs.length){el.innerHTML='<div class="empty">No movements yet</div>';return;}
   el.innerHTML=logs.slice(0,200).map(l=>{const d=new Date(l.ts);
     return `<div class="logrow"><div class="d ${l.delta>0?'p':'m'}">${l.delta>0?'+':''}${l.delta}</div>
       <div class="n">${esc(l.name||l.sku)}</div>
-      <div class="t">${d.toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'})} ${d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+      <div class="t">${d.toLocaleDateString('en-GB',{month:'2-digit',day:'2-digit'})} ${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
   }).join('');
 }
 /* ---------- export helpers ---------- */
@@ -629,8 +621,8 @@ function download(name,text){
 }
 async function copyRows(rows,btn){
   const prev=btn.textContent;
-  try{ await navigator.clipboard.writeText(toTSV(rows)); btn.textContent='已复制 ✓'; }
-  catch(e){ btn.textContent='复制失败'; }
+  try{ await navigator.clipboard.writeText(toTSV(rows)); btn.textContent='Copied ✓'; }
+  catch(e){ btn.textContent='Copy failed'; }
   setTimeout(()=>{btn.textContent=prev;},1800);
 }
 const fmtD=t=>{const d=new Date(t),p=n=>String(n).padStart(2,'0');
@@ -649,7 +641,7 @@ function stockRows(){
   CATALOG.forEach(r=>{const n=qtyOf(r); if(n) out.push([r.e,sheetName(r),n]);});
   return out;
 }
-const HEAD_LOG=['日期时间','方向','变动(卷)','Filament','Barcode','Box SKU','操作后库存','来源'];
+const HEAD_LOG=['Date','Direction','Change','Filament','Barcode','Carton SKU','Stock after','Source'];
 function logRows(){
   const out=[HEAD_LOG];
   logs.forEach(l=>{const r=BY_SKU.get(String(l.sku||'').toUpperCase());
@@ -666,31 +658,31 @@ function eanColumn(sign){
 async function copyEan(sign,btn){
   const rows=eanColumn(sign);
   const prev=btn.textContent;
-  if(!rows.length){ btn.textContent='本批次没有'+(sign>0?'入库':'出库'); setTimeout(()=>{btn.textContent=prev;},1800); return; }
+  if(!rows.length){ btn.textContent='Nothing to scan '+(sign>0?'IN':'OUT'); setTimeout(()=>{btn.textContent=prev;},1800); return; }
   try{ await navigator.clipboard.writeText(rows.map(r=>r[0]).join('\n'));
-    btn.textContent='已复制 '+rows.length+' 行 ✓'; }
-  catch(e){ btn.textContent='复制失败'; }
+    btn.textContent='Copied '+rows.length+' rows ✓'; }
+  catch(e){ btn.textContent='Copy failed'; }
   setTimeout(()=>{btn.textContent=prev;},2400);
 }
 $('#sx-in').onclick=e=>copyEan(1,e.target);
 $('#sx-out').onclick=e=>copyEan(-1,e.target);
-$('#sx-csv').onclick=()=>download('收货批次-'+stamp()+'.csv',toCSV(batchRows()));
+$('#sx-csv').onclick=()=>download('batch-'+stamp()+'.csv',toCSV(batchRows()));
 $('#sx-copy').onclick=e=>copyRows(batchRows(),e.target);
 $('#sx-clear').onclick=()=>{ if(!recent.length) return;
-  if(confirm('结束本批次？清单会清空，库存数字不变。')){ recent=[]; saveSession(); drawRecent(); fb.innerHTML=''; } };
+  if(confirm('End this batch? The list clears; stock figures are unchanged.')){ recent=[]; saveSession(); drawRecent(); fb.innerHTML=''; } };
 if(navigator.canShare){
   const sb=$('#sx-share'); sb.hidden=false;
   sb.onclick=async()=>{
     try{
-      const f=new File([toCSV(batchRows())],'收货批次-'+stamp()+'.csv',{type:'text/csv'});
-      if(navigator.canShare({files:[f]})) await navigator.share({files:[f],title:'Filament 收货批次'});
-      else await navigator.share({title:'Filament 收货批次',text:toTSV(batchRows())});
+      const f=new File([toCSV(batchRows())],'batch-'+stamp()+'.csv',{type:'text/csv'});
+      if(navigator.canShare({files:[f]})) await navigator.share({files:[f],title:'Filament batch'});
+      else await navigator.share({title:'Filament batch',text:toTSV(batchRows())});
     }catch(e){}
   };
 }
-$('#exp').onclick=()=>download('库存快照-'+stamp()+'.csv',toCSV(stockRows()));
+$('#exp').onclick=()=>download('stock-'+stamp()+'.csv',toCSV(stockRows()));
 $('#exp-copy').onclick=e=>copyRows(stockRows(),e.target);
-$('#exp-log').onclick=()=>download('出入库流水-'+stamp()+'.csv',toCSV(logRows()));
+$('#exp-log').onclick=()=>download('movement-log-'+stamp()+'.csv',toCSV(logRows()));
 $('#imp').onchange=e=>{
   const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
   const rd=new FileReader();
@@ -699,18 +691,18 @@ $('#imp').onchange=e=>{
       const lines=String(rd.result).replace(/^﻿/,'').trim().split(/\r?\n/);
       const hdr=lines[0].split(',').map(s=>s.trim());
       const iS=hdr.indexOf('sku'), iQ=hdr.indexOf('qty');
-      if(iS<0||iQ<0) throw new Error('CSV 缺少 sku / qty 列');
+      if(iS<0||iQ<0) throw new Error('CSV has no sku / qty column');
       let n=0; const ns={};
       lines.slice(1).forEach(ln=>{const c=ln.split(',');
         const sku=(c[iS]||'').trim().replace(/^"|"$/g,''), q=parseInt(c[iQ],10);
         if(BY_SKU.has(sku.toUpperCase())&&q>0){ns[sku]=q;n++;}});
-      stock=ns;logs.unshift({ts:Date.now(),sku:'-',name:'导入备份（'+n+' 个 SKU）',delta:0,after:0,how:'import'});
+      stock=ns;logs.unshift({ts:Date.now(),sku:'-',name:'Backup restored ('+n+' SKUs)',delta:0,after:0,how:'import'});
       save();render();renderLog();renderFind();drawRecent();
-      fb.innerHTML='<div class="toast ok"><div class="tt"><b>已导入 '+n+' 个 SKU 的库存</b></div></div>';
-    }catch(err){ alert('导入失败：'+err.message); }
+      fb.innerHTML='<div class="toast ok"><div class="tt"><b>Restored stock for '+n+' SKUs</b></div></div>';
+    }catch(err){ alert('Restore failed: '+err.message); }
   };
   rd.readAsText(f);
 };
 render();renderLog();renderFind();drawRecent();
-$('#sub').textContent='PLA Basic + PLA Matte · '+CATALOG.length+' 个 SKU';
+$('#sub').textContent='PLA Basic + PLA Matte · '+CATALOG.length+' SKUs';
 </script></body></html>
