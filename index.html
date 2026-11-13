@@ -155,6 +155,11 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
  </div>
 </header>
 <div class="wrap">
+<div id="updbar" hidden style="background:#111827;color:#fff;border-radius:12px;padding:11px 13px;
+ margin-top:12px;display:flex;gap:10px;align-items:center;font-size:13px">
+ <span style="flex:1">A newer version is available.</span>
+ <button id="updbtn" style="border:0;background:#fff;color:#111827;font:inherit;font-size:12.5px;
+  font-weight:650;padding:7px 13px;border-radius:9px;cursor:pointer">Reload</button></div>
 <section id="s-scan" class="on">
  <div class="cam" id="cam">
   <video id="video" playsinline muted></video>
@@ -706,11 +711,39 @@ $('#imp').onchange=e=>{
         if(BY_SKU.has(sku.toUpperCase())&&q>0){ns[sku]=q;n++;}});
       stock=ns;logs.unshift({ts:Date.now(),sku:'-',name:'Backup restored ('+n+' SKUs)',delta:0,after:0,how:'import'});
       save();render();renderLog();renderFind();drawRecent();
+
+/* ---------- build / update check ---------- */
+const BUILD='20261113-1753';
+(async()=>{
+  try{
+    const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const v=await r.json();
+    if(v.build && v.build!==BUILD){
+      $('#updbar').hidden=false;
+      $('#updbtn').onclick=()=>{ location.replace(location.pathname+'?v='+v.build); };
+    }
+  }catch(e){}
+})();
       fb.innerHTML='<div class="toast ok"><div class="tt"><b>Restored stock for '+n+' SKUs</b></div></div>';
     }catch(err){ alert('Restore failed: '+err.message); }
   };
   rd.readAsText(f);
 };
 render();renderLog();renderFind();drawRecent();
-$('#sub').textContent=[...new Set(CATALOG.map(r=>r.m))].join(' · ')+' — '+CATALOG.length+' SKUs';
+
+/* ---------- build / update check ---------- */
+const BUILD='20261113-1753';
+(async()=>{
+  try{
+    const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const v=await r.json();
+    if(v.build && v.build!==BUILD){
+      $('#updbar').hidden=false;
+      $('#updbtn').onclick=()=>{ location.replace(location.pathname+'?v='+v.build); };
+    }
+  }catch(e){}
+})();
+$('#sub').textContent=[...new Set(CATALOG.map(r=>r.m))].join(' · ')+' — '+CATALOG.length+' SKUs · build '+BUILD;
 </script></body></html>
