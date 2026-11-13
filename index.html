@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1216">
+<title>iLaser Filament 库存</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--g:#00AE42;--g-d:#00913a;--bg:#f4f5f7;--card:#fff;--ink:#15181d;--mut:#6b7280;
+ --line:#e3e6ea;--r:14px;--sh:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08)}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+ background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+.wrap{max-width:720px;margin:0 auto;padding:0 12px 24px}
+header{position:sticky;top:0;z-index:30;background:rgba(244,245,247,.94);backdrop-filter:blur(10px);
+ padding:calc(env(safe-area-inset-top) + 9px) 12px 7px;border-bottom:1px solid var(--line)}
+.hd{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:9px}
+.logo{width:26px;height:26px;border-radius:7px;background:var(--g);display:grid;place-items:center;flex:0 0 auto}
+.logo svg{width:15px;height:15px;fill:#fff}
+h1{font-size:15px;font-weight:650;letter-spacing:-.01em}
+.sub{font-size:10.5px;color:var(--mut)}
+.tabs{display:flex;gap:4px;max-width:720px;margin:9px auto 0;background:#e8eaee;padding:3px;border-radius:11px}
+.tab{flex:1;border:0;background:none;font:inherit;font-size:13px;font-weight:550;color:var(--mut);
+ padding:7px 4px;border-radius:9px;cursor:pointer}
+.tab[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:var(--sh)}
+section{display:none;padding-top:12px}section.on{display:block}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:13px;margin-bottom:11px}
+/* camera */
+.cam{position:relative;background:#0f1216;border-radius:var(--r);overflow:hidden;aspect-ratio:4/3;margin-bottom:11px}
+.cam video{width:100%;height:100%;object-fit:cover;display:block}
+.cam .off{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:#9aa2ad}
+.cam .off b{display:block;font-size:14px;color:#e6e9ed;margin-bottom:5px}
+.cam .off span{font-size:12px;line-height:1.6}
+.startb{margin-top:14px;border:0;background:var(--g);color:#fff;font:inherit;font-size:14px;font-weight:650;
+ padding:12px 26px;border-radius:11px;cursor:pointer}
+.recticle{position:absolute;left:11%;right:11%;top:28%;bottom:28%;border:2px solid rgba(255,255,255,.85);
+ border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.34);pointer-events:none}
+.recticle::after{content:'';position:absolute;left:6px;right:6px;top:50%;height:2px;background:var(--g);
+ box-shadow:0 0 9px var(--g);animation:sweep 2.1s ease-in-out infinite}
+@keyframes sweep{0%,100%{top:8%}50%{top:92%}}
+.camtop{position:absolute;top:0;left:0;right:0;display:flex;gap:7px;padding:9px;z-index:2}
+.camtop button{border:0;background:rgba(15,18,22,.62);backdrop-filter:blur(6px);color:#fff;font:inherit;
+ font-size:11.5px;font-weight:600;padding:7px 11px;border-radius:9px;cursor:pointer}
+.camtop .sp{flex:1}
+.lockbadge{display:none;position:absolute;left:50%;top:13px;transform:translateX(-50%);z-index:4;
+ background:rgba(0,174,66,.94);color:#fff;font-size:11.5px;font-weight:650;padding:7px 13px;
+ border-radius:20px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.recticle.locked{border-color:#00AE42}
+.recticle.locked::after{display:none}
+.zoomwrap{position:absolute;left:10px;right:10px;bottom:10px;z-index:3;display:flex;gap:9px;align-items:center;
+ background:rgba(15,18,22,.62);backdrop-filter:blur(6px);padding:8px 12px;border-radius:11px;color:#fff;font-size:11.5px;font-weight:600}
+.zoomwrap input{flex:1;accent-color:#00AE42}
+.hitmark{position:absolute;inset:0;background:rgba(0,174,66,.4);opacity:0;pointer-events:none}
+.hitmark.on{animation:flash .45s ease-out}
+@keyframes flash{from{opacity:1}to{opacity:0}}
+.seg{display:flex;gap:6px;background:#eef0f3;padding:4px;border-radius:11px;margin-bottom:10px}
+.seg button{flex:1;border:0;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--mut);
+ padding:9px 6px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--ink);box-shadow:var(--sh)}
+.seg small{font-size:10px;font-weight:500;color:var(--mut)}
+.dir{display:flex;gap:6px;margin-bottom:10px}
+.dir button{flex:1;border:1.5px solid var(--line);background:var(--card);font:inherit;font-size:13px;
+ font-weight:600;color:var(--mut);padding:9px;border-radius:10px;cursor:pointer}
+.dir button[aria-pressed=true]{border-color:var(--g);color:var(--g-d);background:#f0fdf4}
+.dir button.out[aria-pressed=true]{border-color:#e11d48;color:#be123c;background:#fff1f2}
+label.fl{display:block;font-size:10.5px;font-weight:600;color:var(--mut);letter-spacing:.04em;
+ text-transform:uppercase;margin-bottom:6px}
+input[type=text],input[type=search]{width:100%;font:inherit;font-size:16px;padding:12px 13px;
+ border:1.5px solid var(--line);border-radius:11px;background:#fbfcfd;outline:none;font-variant-numeric:tabular-nums}
+input:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(0,174,66,.12)}
+.hint{font-size:11.5px;color:var(--mut);margin-top:7px;line-height:1.55}
+.toast{border-radius:12px;padding:11px 13px;margin-bottom:11px;display:flex;gap:10px;align-items:flex-start}
+.toast.ok{background:#f0fdf4;border:1px solid #bbf7d0}
+.toast.warn{background:#fff7e6;border:1px solid #fde68a}
+.toast.err{background:#fef2f2;border:1px solid #fecaca}
+.toast .tt{flex:1;min-width:0}.toast b{font-size:14px;display:block}
+.toast span{font-size:12px;color:var(--mut);display:block;margin-top:2px}
+.undo{border:1px solid var(--line);background:#fff;border-radius:8px;font:inherit;font-size:12px;
+ font-weight:600;padding:6px 10px;cursor:pointer;flex:0 0 auto}
+.sw{width:34px;height:34px;border-radius:9px;flex:0 0 auto;border:1px solid rgba(0,0,0,.14);
+ box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.sw.multi{background:conic-gradient(#e11d48,#f59e0b,#eab308,#22c55e,#06b6d4,#3b82f6,#8b5cf6,#e11d48)}
+.row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.row:last-child{border-bottom:0}.row .info{flex:1;min-width:0}
+.row .nm{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.row .meta{font-size:11px;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px}
+.pill.spool{background:#eef2ff;color:#4338ca}.pill.nospool{background:#f1f5f9;color:#64748b}
+.qty{text-align:right;flex:0 0 auto}
+.qty b{font-size:19px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.qty i{font-size:10px;color:var(--mut);font-style:normal;display:block;margin-top:-1px}
+.qty.zero b{color:#cbd0d6}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 2px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:20px;font:inherit;font-size:12px;
+ font-weight:550;padding:6px 11px;cursor:pointer;color:var(--mut)}
+.chip[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:11px}
+.gi{cursor:pointer;text-align:center;position:relative}
+.gi .sw{width:100%;height:58px;border-radius:11px;border:1px solid rgba(0,0,0,.16);
+ box-shadow:inset 0 0 0 2px rgba(255,255,255,.3)}
+.gi .gn{font-size:11px;font-weight:600;margin-top:5px;line-height:1.25}
+.gi .gc{font-size:9.5px;color:var(--mut);font-variant-numeric:tabular-nums}
+.gi .gq{position:absolute;top:4px;right:4px;background:rgba(15,18,22,.78);color:#fff;font-size:9.5px;
+ font-weight:700;padding:2px 6px;border-radius:9px;font-variant-numeric:tabular-nums}
+.gi .gq.z{background:rgba(220,38,38,.85)}
+.bigsku{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:46px;font-weight:700;
+ letter-spacing:-.02em;text-align:center;line-height:1.05;margin:14px 0 4px}
+.fullsku{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;text-align:center;
+ color:var(--mut);word-break:break-all;margin-bottom:4px}
+.copyb{width:100%;margin-top:11px;border:1.5px solid var(--line);background:var(--card);font:inherit;
+ font-size:13.5px;font-weight:650;padding:11px;border-radius:11px;cursor:pointer}
+.stat{display:flex;gap:9px;margin-bottom:11px}
+.stat div{flex:1;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:11px 13px}
+.stat b{font-size:21px;font-variant-numeric:tabular-nums;display:block}
+.stat span{font-size:10.5px;color:var(--mut)}
+.empty{text-align:center;color:var(--mut);font-size:13px;padding:32px 10px;line-height:1.6}
+dialog{border:0;border-radius:18px;padding:0;max-width:420px;width:calc(100% - 26px)}
+dialog::backdrop{background:rgba(15,18,23,.45)}
+.dlg{padding:17px}.dlg h3{font-size:17px;font-weight:650}
+.dlg .dm{font-size:12px;color:var(--mut);line-height:1.7;margin-top:10px;font-variant-numeric:tabular-nums}
+.dlg .dm code{background:#f1f3f5;padding:1px 5px;border-radius:4px;font-size:11.5px}
+.adj{display:flex;gap:6px;margin-top:15px}
+.adj button{flex:1;border:1.5px solid var(--line);background:var(--card);font:inherit;font-size:14px;
+ font-weight:650;padding:11px 4px;border-radius:11px;cursor:pointer}
+.adj button.plus{border-color:#bbf7d0;background:#f0fdf4;color:var(--g-d)}
+.adj button.minus{border-color:#fecdd3;background:#fff1f2;color:#be123c}
+.close{width:100%;margin-top:9px;border:0;background:var(--ink);color:#fff;font:inherit;font-size:14px;
+ font-weight:600;padding:12px;border-radius:11px;cursor:pointer}
+.logrow{display:flex;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.logrow:last-child{border-bottom:0}
+.logrow .d{font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 44px;text-align:right}
+.logrow .d.p{color:var(--g-d)}.logrow .d.m{color:#be123c}
+.logrow .t{flex:0 0 auto;font-size:10.5px;color:var(--mut)}
+.logrow .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tools{display:flex;gap:7px;flex-wrap:wrap}
+.tools button,.tools label{border:1px solid var(--line);background:var(--card);border-radius:10px;font:inherit;
+ font-size:12.5px;font-weight:600;padding:9px 13px;cursor:pointer;color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+ <div class="hd">
+  <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3 6.5 3.6L12 11.5 5.5 7.9 12 4.3ZM5 9.6l6 3.3v6.8l-6-3.3V9.6Zm8 10.1v-6.8l6-3.3v6.8l-6 3.3Z"/></svg></div>
+  <div style="flex:1"><h1>Filament 库存</h1><div class="sub" id="sub">iLaser · Bambu Lab PLA</div></div>
+ </div>
+ <div class="tabs" role="tablist">
+  <button class="tab" role="tab" aria-selected="true" data-t="scan">扫描</button>
+  <button class="tab" role="tab" aria-selected="false" data-t="find">查找</button>
+  <button class="tab" role="tab" aria-selected="false" data-t="stock">库存</button>
+  <button class="tab" role="tab" aria-selected="false" data-t="log">记录</button>
+ </div>
+</header>
+<div class="wrap">
+<section id="s-scan" class="on">
+ <div class="cam" id="cam">
+  <video id="video" playsinline muted></video>
+  <div class="recticle" id="ret" hidden></div>
+  <div class="hitmark" id="hit"></div>
+  <div class="lockbadge" id="lockbadge">已记录 · 移开镜头再扫下一个</div>
+  <div class="camtop" id="camtop" hidden>
+   <button id="torch" hidden>手电筒</button><div class="sp"></div><button id="stopcam">停止</button>
+  </div>
+  <div class="zoomwrap" id="zoomwrap" hidden>
+   <span>放大</span><input type="range" id="zoom" min="1" max="4" step="0.1" value="1"><span id="zoomv">1.0×</span>
+  </div>
+  <div class="off" id="camoff">
+   <div><b>摄像头扫码</b><span id="camsg">对准箱子上的 QR 或小盒上的条码，自动连续识别</span>
+   <br><button class="startb" id="startcam">开启摄像头</button></div>
+  </div>
+ </div>
+ <div class="card" style="display:flex;gap:8px;align-items:center;padding:11px 13px">
+  <button id="shotb" style="flex:1;border:1.5px solid var(--line);background:var(--card);font:inherit;
+   font-size:13px;font-weight:600;padding:10px;border-radius:10px;cursor:pointer">扫不出来？拍一张高清照片识别</button>
+  <input type="file" id="shotf" accept="image/*" capture="environment" hidden>
+ </div>
+ <div class="card">
+  <div class="seg" id="modeseg">
+   <button data-q="10" aria-pressed="true">整箱<small>SKU · 10 卷</small></button>
+   <button data-q="1" aria-pressed="false">单卷<small>EAN · 1 卷</small></button>
+  </div>
+  <div class="dir" id="dirseg">
+   <button data-d="1" aria-pressed="true">入库</button>
+   <button class="out" data-d="-1" aria-pressed="false">出库</button>
+  </div>
+  <label class="fl" for="code">或手动输入 / 扫码枪</label>
+  <input type="text" id="code" placeholder="SKU 或 EAN" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+  <div class="hint">识别成功会震动提示，同一个码 3 秒内不会重复计数。</div>
+  <div id="rawline" style="margin-top:9px;padding:8px 10px;background:#f1f3f5;border-radius:9px;
+       font-size:11px;color:#475569;word-break:break-all;line-height:1.5;display:none">
+   <b style="color:#15181d">上次识别到的原始内容</b><br><span id="rawtxt" style="font-family:ui-monospace,Menlo,Consolas,monospace"></span></div>
+ </div>
+ <div id="feedback"></div>
+ <div class="card" id="recentcard" hidden>
+  <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+   <label class="fl" style="margin:0;flex:1">本批次</label>
+   <span id="sessum" style="font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums"></span>
+  </div>
+  <div id="recent"></div>
+  <div class="tools" style="margin-top:12px">
+   <button id="sx-csv">导出 CSV</button>
+   <button id="sx-copy">复制到 Excel</button>
+   <button id="sx-share" hidden>分享</button>
+   <button id="sx-clear" style="color:#be123c;border-color:#fecdd3">结束批次</button>
+  </div>
+  <div class="hint">「结束批次」只清空这张清单，库存数字不受影响。</div>
+ </div>
+</section>
+<section id="s-find">
+ <div class="card">
+  <input type="search" id="fq" placeholder="直接打颜色，比如 black / 黑 / 11200" autocomplete="off">
+  <div class="filters" id="fmat">
+   <button class="chip" data-v="PLA Basic" aria-pressed="true">PLA Basic</button>
+   <button class="chip" data-v="PLA Matte" aria-pressed="false">PLA Matte</button>
+  </div>
+  <div class="filters" id="fsp">
+   <button class="chip" data-v="1" aria-pressed="true">带轴 SPL</button>
+   <button class="chip" data-v="0" aria-pressed="false">不带轴 SPLFREE</button>
+  </div>
+ </div>
+ <div class="card"><div class="grid" id="fgrid"></div></div>
+</section>
+
+<section id="s-stock">
+ <div class="stat">
+  <div><b id="st-spools">0</b><span>总卷数</span></div>
+  <div><b id="st-skus">0</b><span>有货 SKU</span></div>
+  <div><b id="st-boxes">0</b><span>约合箱数</span></div>
+ </div>
+ <div class="card">
+  <input type="search" id="q" placeholder="搜颜色 / 色号 / SKU / EAN…" autocomplete="off">
+  <div class="filters" id="filters">
+   <button class="chip" data-f="instock" aria-pressed="true">只看有货</button>
+   <button class="chip" data-f="basic" aria-pressed="false">PLA Basic</button>
+   <button class="chip" data-f="matte" aria-pressed="false">PLA Matte</button>
+   <button class="chip" data-f="spool" aria-pressed="false">带轴</button>
+   <button class="chip" data-f="nospool" aria-pressed="false">不带轴</button>
+  </div>
+ </div>
+ <div class="card"><div id="list"></div></div>
+ <div class="card"><label class="fl">导出 / 备份</label><div class="tools">
+  <button id="exp">库存快照 CSV</button>
+  <button id="exp-copy">库存复制到 Excel</button>
+  <button id="exp-log">全部流水 CSV</button>
+  <label>导入备份<input type="file" id="imp" accept=".csv,text/csv" hidden></label>
+ </div><div class="hint">库存存在这台手机/电脑的浏览器里。换设备或清缓存前先导出备份。CSV 带 BOM，Excel 打开中文不乱码。</div></div>
+</section>
+<section id="s-log"><div class="card"><div id="loglist"><div class="empty">暂无记录</div></div></div></section>
+</div>
+<dialog id="dlg"><div class="dlg" id="dlgbody"></div></dialog>
+<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script>const CATALOG = [{"m":"PLA Matte","c":"Ivory White","cc":"11100","e":"6975337031345","s":true,"k":"A01-W2-1.75-1000-SPL","p":6.73,"h":"#FFFFFF"},{"m":"PLA Matte","c":"Lilac Purple","cc":"11700","e":"6975337030157","s":false,"k":"A01-P4-1.75-1000-SPLFREE","p":5.75,"h":"#AE96D4"},{"m":"PLA Matte","c":"Latte Brown","cc":"11800","e":"6975337030126","s":false,"k":"A01-N1-1.75-1000-SPLFREE","p":5.75,"h":"#D3B7A7"},{"m":"PLA Matte","c":"Grass Green","cc":"11500","e":"6975337030119","s":false,"k":"A01-G1-1.75-1000-SPLFREE","p":5.75,"h":"#61C680"},{"m":"PLA Matte","c":"Lemon Yellow","cc":"11400","e":"6975337030096","s":false,"k":"A01-Y2-1.75-1000-SPLFREE","p":5.75,"h":"#F7D959"},{"m":"PLA Matte","c":"Sakura Pink","cc":"11201","e":"6975337030072","s":false,"k":"A01-P3-1.75-1000-SPLFREE","p":5.75,"h":"#E8AFCF"},{"m":"PLA Matte","c":"Mandarin Orange","cc":"11300","e":"6975337030065","s":false,"k":"A01-A2-1.75-1000-SPLFREE","p":5.75,"h":"#F99963"},{"m":"PLA Matte","c":"Ice Blue","cc":"11601","e":"6975337030140","s":false,"k":"A01-B4-1.75-1000-SPLFREE","p":5.75,"h":"#A3D8E1"},{"m":"PLA Matte","c":"Scarlet Red","cc":"11200","e":"6975337030133","s":false,"k":"A01-R1-1.75-1000-SPLFREE","p":5.75,"h":"#DE4343"},{"m":"PLA Matte","c":"Marine Blue","cc":"11600","e":"6975337030089","s":false,"k":"A01-B3-1.75-1000-SPLFREE","p":5.75,"h":"#0078BF"},{"m":"PLA Matte","c":"Ash Gray","cc":"11102","e":"6975337030058","s":false,"k":"A01-D3-1.75-1000-SPLFREE","p":5.75,"h":"#9B9EA0"},{"m":"PLA Matte","c":"Charcoal","cc":"11101","e":"6975337030102","s":false,"k":"A01-K1-1.75-1000-SPLFREE","p":5.75,"h":"#000000"},{"m":"PLA Matte","c":"Ivory White","cc":"11100","e":"6975337030041","s":false,"k":"A01-W2-1.75-1000-SPLFREE","p":5.75,"h":"#FFFFFF"},{"m":"PLA Matte","c":"Dark Brown","cc":"11801","e":"6975337031895","s":true,"k":"A01-N2-1.75-1000-SPL","p":6.73,"h":"#7D6556"},{"m":"PLA Matte","c":"Dark Red","cc":"11202","e":"6975337031888","s":true,"k":"A01-R4-1.75-1000-SPL","p":6.73,"h":"#BB3D43"},{"m":"PLA Matte","c":"Dark Blue","cc":"11602","e":"6975337031871","s":true,"k":"A01-B6-1.75-1000-SPL","p":6.73,"h":"#042F56"},{"m":"PLA Matte","c":"Dark Green","cc":"11501","e":"6975337031864","s":true,"k":"A01-G7-1.75-1000-SPL","p":6.73,"h":"#68724D"},{"m":"PLA Matte","c":"Lilac Purple","cc":"11700","e":"6975337032434","s":true,"k":"A01-P4-1.75-1000-SPL","p":6.73,"h":"#AE96D4"},{"m":"PLA Matte","c":"Latte Brown","cc":"11800","e":"6975337032427","s":true,"k":"A01-N1-1.75-1000-SPL","p":6.73,"h":"#D3B7A7"},{"m":"PLA Matte","c":"Grass Green","cc":"11500","e":"6975337032410","s":true,"k":"A01-G1-1.75-1000-SPL","p":6.73,"h":"#61C680"},{"m":"PLA Matte","c":"Lemon Yellow","cc":"11400","e":"6975337032403","s":true,"k":"A01-Y2-1.75-1000-SPL","p":6.73,"h":"#F7D959"},{"m":"PLA Matte","c":"Sakura Pink","cc":"11201","e":"6975337032397","s":true,"k":"A01-P3-1.75-1000-SPL","p":6.73,"h":"#E8AFCF"},{"m":"PLA Matte","c":"Mandarin Orange","cc":"11300","e":"6975337032380","s":true,"k":"A01-A2-1.75-1000-SPL","p":6.73,"h":"#F99963"},{"m":"PLA Matte","c":"Ice Blue","cc":"11601","e":"6975337031857","s":true,"k":"A01-B4-1.75-1000-SPL","p":6.73,"h":"#A3D8E1"},{"m":"PLA Matte","c":"Scarlet Red","cc":"11200","e":"6975337031376","s":true,"k":"A01-R1-1.75-1000-SPL","p":6.73,"h":"#DE4343"},{"m":"PLA Matte","c":"Marine Blue","cc":"11600","e":"6975337031369","s":true,"k":"A01-B3-1.75-1000-SPL","p":6.73,"h":"#0078BF"},{"m":"PLA Matte","c":"Ash Gray","cc":"11102","e":"6975337031352","s":true,"k":"A01-D3-1.75-1000-SPL","p":6.73,"h":"#9B9EA0"},{"m":"PLA Matte","c":"Charcoal","cc":"11101","e":"6975337031338","s":true,"k":"A01-K1-1.75-1000-SPL","p":6.73,"h":"#000000"},{"m":"PLA Matte","c":"Desert Tan","cc":"11401","e":"6975337035053","s":true,"k":"A01-Y3-1.75-1000-SPL","p":6.73,"h":"#E8DBB7"},{"m":"PLA Matte","c":"Dark Green","cc":"11501","e":"6975337037330","s":false,"k":"A01-G7-1.75-1000-SPLFREE","p":5.75,"h":"#68724D"},{"m":"PLA Matte","c":"Dark Blue","cc":"11602","e":"6975337037347","s":false,"k":"A01-B6-1.75-1000-SPLFREE","p":5.75,"h":"#042F56"},{"m":"PLA Matte","c":"Dark Red","cc":"11202","e":"6975337037323","s":false,"k":"A01-R4-1.75-1000-SPLFREE","p":5.75,"h":"#BB3D43"},{"m":"PLA Matte","c":"Dark Brown","cc":"11801","e":"6975337037316","s":false,"k":"A01-N2-1.75-1000-SPLFREE","p":5.75,"h":"#7D6556"},{"m":"PLA Matte","c":"Desert Tan","cc":"11401","e":"6975337038177","s":false,"k":"A01-Y3-1.75-1000-SPLFREE","p":5.75,"h":"#E8DBB7"},{"m":"PLA Matte","c":"Bone White","cc":"11103","e":"6977252427012","s":false,"k":"A01-W3-1.75-1000-SPLFREE","p":5.75,"h":"#CBC6B8"},{"m":"PLA Matte","c":"Caramel","cc":"11803","e":"6977252427814","s":false,"k":"A01-N3-1.75-1000-SPLFREE","p":5.75,"h":"#AE835B"},{"m":"PLA Matte","c":"Dark Chocolate","cc":"11802","e":"6977252427531","s":false,"k":"A01-N0-1.75-1000-SPLFREE","p":5.75,"h":"#4D3324"},{"m":"PLA Matte","c":"Apple Green","cc":"11502","e":"6977252427524","s":false,"k":"A01-G0-1.75-1000-SPLFREE","p":5.75,"h":"#C2E189"},{"m":"PLA Matte","c":"Sky Blue","cc":"11603","e":"6977252427517","s":false,"k":"A01-B0-1.75-1000-SPLFREE","p":5.75,"h":"#56B7E6"},{"m":"PLA Matte","c":"Plum","cc":"11204","e":"6977252427500","s":false,"k":"A01-R3-1.75-1000-SPLFREE","p":5.75,"h":"#950051"},{"m":"PLA Matte","c":"Terracotta","cc":"11203","e":"6977252428194","s":false,"k":"A01-R2-1.75-1000-SPLFREE","p":5.75,"h":"#B15533"},{"m":"PLA Matte","c":"Nardo Gray","cc":"11104","e":"6977252428200","s":false,"k":"A01-D0-1.75-1000-SPLFREE","p":5.75,"h":"#757575"},{"m":"PLA Basic","c":"Brown","cc":"10800","e":"6975337030263","s":false,"k":"A00-N0-1.75-1000-SPLFREE","p":5.75,"h":"#9D432C"},{"m":"PLA Basic","c":"Pink","cc":"10203","e":"6975337030249","s":false,"k":"A00-P1-1.75-1000-SPLFREE","p":5.75,"h":"#F55A74"},{"m":"PLA Basic","c":"Blue Gray","cc":"10602","e":"6975337030232","s":false,"k":"A00-B1-1.75-1000-SPLFREE","p":5.75,"h":"#5B6579"},{"m":"PLA Basic","c":"Beige","cc":"10201","e":"6975337030201","s":false,"k":"A00-P0-1.75-1000-SPLFREE","p":5.75,"h":"#F7E6DE"},{"m":"PLA Basic","c":"Gray","cc":"10103","e":"6975337030195","s":false,"k":"A00-D0-1.75-1000-SPLFREE","p":5.75,"h":"#8E9089"},{"m":"PLA Basic","c":"Orange","cc":"10300","e":"6975337030898","s":false,"k":"A00-A0-1.75-1000-SPLFREE","p":5.75,"h":"#FF6A13"},{"m":"PLA Basic","c":"Yellow","cc":"10400","e":"6975337030225","s":false,"k":"A00-Y0-1.75-1000-SPLFREE","p":5.75,"h":"#F4EE2A"},{"m":"PLA Basic","c":"Blue","cc":"10601","e":"6975337032038","s":false,"k":"A00-B9-1.75-1000-SPLFREE","p":5.75,"h":"#0A2989"},{"m":"PLA Basic","c":"Red","cc":"10200","e":"6975337030270","s":false,"k":"A00-R0-1.75-1000-SPLFREE","p":5.75,"h":"#C12E1F"},{"m":"PLA Basic","c":"Silver","cc":"10102","e":"6975337030218","s":false,"k":"A00-D1-1.75-1000-SPLFREE","p":5.75,"h":"#A6A9AA"},{"m":"PLA Basic","c":"Black","cc":"10101","e":"6975337031178","s":false,"k":"A00-K0-1.75-1000-SPLFREE","p":5.75,"h":"#000000"},{"m":"PLA Basic","c":"Jade White","cc":"10100","e":"6975337030164","s":false,"k":"A00-W1-1.75-1000-SPLFREE","p":5.75,"h":"#FFFFFF"},{"m":"PLA Basic","c":"Ocean to Meadow","cc":"10902","e":"6975337032083","s":true,"k":"A00-M2-1.75-1000-SPL","p":8.73,"h":"#4FA8A0"},{"m":"PLA Basic","c":"Solar Breeze","cc":"10901","e":"6975337032076","s":true,"k":"A00-M1-1.75-1000-SPL","p":8.73,"h":"#F6C45B"},{"m":"PLA Basic","c":"Arctic Whisper","cc":"10900","e":"6975337032069","s":true,"k":"A00-M0-1.75-1000-SPL","p":8.73,"h":"#D9E5F0"},{"m":"PLA Basic","c":"Cyan","cc":"10603","e":"6975337032052","s":true,"k":"A00-B8-1.75-1000-SPL","p":6.73,"h":"#0086D6"},{"m":"PLA Basic","c":"Magenta","cc":"10202","e":"6975337032045","s":true,"k":"A00-P6-1.75-1000-SPL","p":6.73,"h":"#EC008C"},{"m":"PLA Basic","c":"Purple","cc":"10700","e":"6975337031932","s":true,"k":"A00-P5-1.75-1000-SPL","p":6.73,"h":"#5E43B7"},{"m":"PLA Basic","c":"Gold","cc":"10401","e":"6975337031925","s":true,"k":"A00-Y4-1.75-1000-SPL","p":6.73,"h":"#E4BD68"},{"m":"PLA Basic","c":"Bronze","cc":"10801","e":"6975337031918","s":true,"k":"A00-Y3-1.75-1000-SPL","p":6.73,"h":"#847D48"},{"m":"PLA Basic","c":"Brown","cc":"10800","e":"6975337032373","s":true,"k":"A00-N0-1.75-1000-SPL","p":6.73,"h":"#9D432C"},{"m":"PLA Basic","c":"Pink","cc":"10203","e":"6975337032359","s":true,"k":"A00-P1-1.75-1000-SPL","p":6.73,"h":"#F55A74"},{"m":"PLA Basic","c":"Blue Gray","cc":"10602","e":"6975337032342","s":true,"k":"A00-B1-1.75-1000-SPL","p":6.73,"h":"#5B6579"},{"m":"PLA Basic","c":"Beige","cc":"10201","e":"6975337032335","s":true,"k":"A00-P0-1.75-1000-SPL","p":6.73,"h":"#F7E6DE"},{"m":"PLA Basic","c":"Gray","cc":"10103","e":"6975337032328","s":true,"k":"A00-D0-1.75-1000-SPL","p":6.73,"h":"#8E9089"},{"m":"PLA Basic","c":"Orange","cc":"10300","e":"6975337032311","s":true,"k":"A00-A0-1.75-1000-SPL","p":6.73,"h":"#FF6A13"},{"m":"PLA Basic","c":"Yellow","cc":"10400","e":"6975337031956","s":true,"k":"A00-Y0-1.75-1000-SPL","p":6.73,"h":"#F4EE2A"},{"m":"PLA Basic","c":"Blue","cc":"10601","e":"6975337032533","s":true,"k":"A00-B9-1.75-1000-SPL","p":6.73,"h":"#0A2989"},{"m":"PLA Basic","c":"Red","cc":"10200","e":"6975337031413","s":true,"k":"A00-R0-1.75-1000-SPL","p":6.73,"h":"#C12E1F"},{"m":"PLA Basic","c":"Silver","cc":"10102","e":"6975337031390","s":true,"k":"A00-D1-1.75-1000-SPL","p":6.73,"h":"#A6A9AA"},{"m":"PLA Basic","c":"Black","cc":"10101","e":"6975337031383","s":true,"k":"A00-K0-1.75-1000-SPL","p":6.73,"h":"#000000"},{"m":"PLA Basic","c":"Jade White","cc":"10100","e":"6975337031024","s":true,"k":"A00-W1-1.75-1000-SPL","p":6.73,"h":"#FFFFFF"},{"m":"PLA Basic","c":"Mistletoe Green","cc":"10502","e":"6975337035046","s":true,"k":"A00-G2-1.75-1000-SPL","p":6.73,"h":"#3F8E43"},{"m":"PLA Basic","c":"Bambu Green","cc":"10501","e":"6975337033684","s":true,"k":"A00-G6-1.75-1000-SPL","p":6.73,"h":"#00AE42"},{"m":"PLA Basic","c":"Bambu Green","cc":"10501","e":"6975337035817","s":false,"k":"A00-G6-1.75-1000-SPLFREE","p":5.75,"h":"#00AE42"},{"m":"PLA Basic","c":"Bronze","cc":"10801","e":"6975337037361","s":false,"k":"A00-Y3-1.75-1000-SPLFREE","p":5.75,"h":"#847D48"},{"m":"PLA Basic","c":"Gold","cc":"10401","e":"6975337037354","s":false,"k":"A00-Y4-1.75-1000-SPLFREE","p":5.75,"h":"#E4BD68"},{"m":"PLA Basic","c":"Purple","cc":"10700","e":"6975337037378","s":false,"k":"A00-P5-1.75-1000-SPLFREE","p":5.75,"h":"#5E43B7"},{"m":"PLA Basic","c":"Magenta","cc":"10202","e":"6975337037392","s":false,"k":"A00-P6-1.75-1000-SPLFREE","p":5.75,"h":"#EC008C"},{"m":"PLA Basic","c":"Cyan","cc":"10603","e":"6975337037385","s":false,"k":"A00-B8-1.75-1000-SPLFREE","p":5.75,"h":"#0086D6"},{"m":"PLA Basic","c":"Mistletoe Green","cc":"10502","e":"6975337035787","s":false,"k":"A00-G2-1.75-1000-SPLFREE","p":5.75,"h":"#3F8E43"},{"m":"PLA Basic","c":"Light Gray","cc":"10104","e":"6975337039082","s":false,"k":"A00-D2-1.75-1000-SPLFREE","p":5.75,"h":"#D1D3D5"},{"m":"PLA Basic","c":"Dark Gray","cc":"10105","e":"6975337039075","s":false,"k":"A00-D3-1.75-1000-SPLFREE","p":5.75,"h":"#545454"},{"m":"PLA Basic","c":"Cyan&Magenta&Yellow&Jade White","cc":"","e":"6975337038641","s":true,"k":"A00-CMYK-1.75-4000-SPL","p":24.22,"h":""},{"m":"PLA Basic","c":"Pumpkin Orange","cc":"10301","e":"6977252426954","s":false,"k":"A00-A1-1.75-1000-SPLFREE","p":5.75,"h":"#FF9016"},{"m":"PLA Basic","c":"Cobalt Blue","cc":"10604","e":"6977252426961","s":false,"k":"A00-B3-1.75-1000-SPLFREE","p":5.75,"h":"#0056B8"},{"m":"PLA Basic","c":"Hot Pink","cc":"10204","e":"6977252426978","s":false,"k":"A00-R3-1.75-1000-SPLFREE","p":5.75,"h":"#F5547C"},{"m":"PLA Basic","c":"Cocoa Brown","cc":"10802","e":"6977252426985","s":false,"k":"A00-N1-1.75-1000-SPLFREE","p":5.75,"h":"#6F5034"},{"m":"PLA Basic","c":"Bright Green","cc":"10503","e":"6977252426992","s":false,"k":"A00-G3-1.75-1000-SPLFREE","p":5.75,"h":"#BECF00"},{"m":"PLA Basic","c":"Maroon Red","cc":"10205","e":"6977252427203","s":false,"k":"A00-R2-1.75-1000-SPLFREE","p":5.75,"h":"#9D2235"},{"m":"PLA Basic","c":"Sunflower Yellow","cc":"10402","e":"6977252427197","s":false,"k":"A00-Y2-1.75-1000-SPLFREE","p":5.75,"h":"#FEC600"},{"m":"PLA Basic","c":"Turquoise","cc":"10605","e":"6977252427210","s":false,"k":"A00-B5-1.75-1000-SPLFREE","p":5.75,"h":"#00B1B7"},{"m":"PLA Basic","c":"Indigo Purple","cc":"10701","e":"6977252427227","s":false,"k":"A00-P2-1.75-1000-SPLFREE","p":5.75,"h":"#482960"},{"m":"PLA Basic","c":"Pumpkin Orange","cc":"10301","e":"6977252429085","s":true,"k":"A00-A1-1.75-1000-SPL","p":6.73,"h":"#FF9016"},{"m":"PLA Basic","c":"Sunflower Yellow","cc":"10402","e":"6977252429122","s":true,"k":"A00-Y2-1.75-1000-SPL","p":6.73,"h":"#FEC600"},{"m":"PLA Basic","c":"Indigo Purple","cc":"10701","e":"6977252429115","s":true,"k":"A00-P2-1.75-1000-SPL","p":6.73,"h":"#482960"},{"m":"PLA Basic","c":"Hot Pink","cc":"10204","e":"6977252429092","s":true,"k":"A00-R3-1.75-1000-SPL","p":6.73,"h":"#F5547C"},{"m":"PLA Basic","c":"Cocoa Brown","cc":"10802","e":"6977252429108","s":true,"k":"A00-N1-1.75-1000-SPL","p":6.73,"h":"#6F5034"},{"m":"PLA Basic","c":"Pink Citrus","cc":"10903","e":"6975337036500","s":true,"k":"A00-M3-1.75-1000-SPL","p":8.73,"h":"#F9A7B0"},{"m":"PLA Basic","c":"Mint Lime","cc":"10904","e":"6975337036517","s":true,"k":"A00-M4-1.75-1000-SPL","p":8.73,"h":"#B7E3A6"},{"m":"PLA Basic","c":"Blueberry Bubblegum","cc":"10905","e":"6977252425339","s":true,"k":"A00-M5-1.75-1000-SPL","p":8.73,"h":"#A48FD0"},{"m":"PLA Basic","c":"Dusk Glare","cc":"10906","e":"6977252426268","s":true,"k":"A00-M6-1.75-1000-SPL","p":8.73,"h":"#E8846B"},{"m":"PLA Basic","c":"Cotton Candy Cloud","cc":"10907","e":"6977252427111","s":true,"k":"A00-M7-1.75-1000-SPL","p":8.73,"h":"#F3C5DC"},{"m":"PLA Basic","c":"12-Color Set","cc":"","e":"6937285510020","s":true,"k":"A00-MC01-1.75-3000-SPL","p":25.0,"h":""}];</script>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const BY_EAN=new Map(), BY_SKU=new Map();
+CATALOG.forEach((r,i)=>{r.id=String(i);BY_EAN.set(r.e,r);BY_SKU.set(r.k.toUpperCase(),r);});
+const kk=r=>r.k;
+
+/* ---------- storage ---------- */
+const SK='ilaser_fil_stock_v1', LK='ilaser_fil_log_v1';
+let stock={}, logs=[], mode=10, dir=1;
+try{stock=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){stock={}}
+try{logs=JSON.parse(localStorage.getItem(LK)||'[]')}catch(e){logs=[]}
+const save=()=>{try{localStorage.setItem(SK,JSON.stringify(stock));localStorage.setItem(LK,JSON.stringify(logs.slice(0,600)))}catch(e){}};
+const qtyOf=r=>stock[kk(r)]||0;
+
+function move(r,delta,how){
+  const cur=qtyOf(r), next=Math.max(0,cur+delta), actual=next-cur;
+  stock[kk(r)]=next;
+  if(actual) logs.unshift({ts:Date.now(),sku:r.k,ean:r.e,name:r.m+' · '+r.c,delta:actual,after:next,how:how||''});
+  save(); render(); renderLog(); renderFind();
+  return {next,actual};
+}
+
+/* ---------- lookup ---------- */
+function lookup(raw){
+  const s=String(raw||'').trim().toUpperCase().replace(/\s+/g,'');
+  if(!s) return null;
+  if(BY_EAN.has(s)) return {r:BY_EAN.get(s),kind:'ean'};
+  if(BY_SKU.has(s)) return {r:BY_SKU.get(s),kind:'sku'};
+  const d=s.replace(/\D/g,'');
+  if(d.length>=12&&BY_EAN.has(d)) return {r:BY_EAN.get(d),kind:'ean'};
+  if(d.length===14&&d[0]==='0'&&BY_EAN.has(d.slice(1))) return {r:BY_EAN.get(d.slice(1)),kind:'ean'};
+  const m=s.match(/A\d{2}-[A-Z0-9]+-[\d.]+-\d+-SPL(FREE)?/);
+  if(m&&BY_SKU.has(m[0])) return {r:BY_SKU.get(m[0]),kind:'sku'};
+  const m2=s.match(/\b\d{13}\b/); if(m2&&BY_EAN.has(m2[0])) return {r:BY_EAN.get(m2[0]),kind:'ean'};
+  return {r:null,kind:/^\d{12,14}$/.test(s)?'ean':'sku',raw:s};
+}
+const swatch=r=>r.h?`<div class="sw" style="background:${r.h}"></div>`:`<div class="sw multi"></div>`;
+const spoolPill=r=>r.s?'<span class="pill spool">带轴</span>':'<span class="pill nospool">无轴</span>';
+
+/* ---------- feedback ---------- */
+const fb=$('#feedback');
+const RK='ilaser_fil_session_v1';
+let recent=[];
+try{ recent=JSON.parse(localStorage.getItem(RK)||'[]').map(x=>({d:x.d,t:x.t,r:BY_SKU.get(String(x.sku||'').toUpperCase())})).filter(x=>x.r); }catch(e){ recent=[]; }
+const saveSession=()=>{ try{ localStorage.setItem(RK, JSON.stringify(recent.slice(0,500).map(x=>({sku:x.r.k,d:x.d,t:x.t})))); }catch(e){} };
+let AC=null;
+function beep(bad){
+  try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.connect(g);g.connect(AC.destination);
+    o.frequency.value=bad?300:900;o.type='sine';
+    g.gain.setValueAtTime(.001,AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(.22,AC.currentTime+.01);
+    g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+(bad?.26:.13));
+    o.start();o.stop(AC.currentTime+(bad?.27:.14));
+  }catch(e){}
+}
+function flash(){const h=$('#hit');h.classList.remove('on');void h.offsetWidth;h.classList.add('on');}
+
+function handle(raw,how){
+  const res=lookup(raw); if(!res) return;
+  if(!res.r){
+    beep(true);
+    fb.innerHTML=`<div class="toast err"><div class="tt"><b>没找到这个编码</b>
+      <span>${esc(res.raw)} — 目前只收录 PLA Basic / PLA Matte</span></div></div>`;
+    return;
+  }
+  const r=res.r, expect=res.kind==='ean'?1:10;
+  if(expect!==mode){
+    beep(true);
+    fb.innerHTML=`<div class="toast warn">${swatch(r)}<div class="tt">
+      <b>扫到的是${res.kind==='ean'?'单卷条码':'整箱编码'}，当前是「${mode===10?'整箱':'单卷'}」模式</b>
+      <span>${esc(r.m)} · ${esc(r.c)}</span>
+      <div style="display:flex;gap:7px;margin-top:9px">
+        <button class="undo" data-go="10">按整箱 ${dir>0?'+':'−'}10</button>
+        <button class="undo" data-go="1">按单卷 ${dir>0?'+':'−'}1</button>
+      </div></div></div>`;
+    fb.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>commit(r,Number(b.dataset.go),how));
+    return;
+  }
+  commit(r,mode,how);
+}
+function commit(r,q,how){
+  const delta=q*dir, {next,actual}=move(r,delta,how||'scan'), blocked=actual!==delta;
+  beep(blocked); flash();
+  if(navigator.vibrate) try{navigator.vibrate(blocked?[60,40,60]:40)}catch(e){}
+  fb.innerHTML=`<div class="toast ${blocked?'warn':'ok'}">${swatch(r)}<div class="tt">
+    <b>${actual>0?'+':''}${actual} 卷 · ${esc(r.c)}</b>
+    <span>${esc(r.m)} ${r.cc?'| '+r.cc:''} ${r.s?'| 带轴':'| 无轴'} — 现有 ${next} 卷${blocked?'（不足，已扣到 0）':''}</span>
+    </div><button class="undo" id="undo">撤销</button></div>`;
+  $('#undo').onclick=()=>{move(r,-actual,'undo');fb.innerHTML='';recent.shift();saveSession();drawRecent();};
+  recent.unshift({r,d:actual,t:Date.now()}); saveSession(); drawRecent();
+}
+function sessionRows(){
+  const m=new Map();
+  recent.forEach(x=>{ const k=x.r.k;
+    if(!m.has(k)) m.set(k,{r:x.r,qty:0,last:x.t});
+    const o=m.get(k); o.qty+=x.d; o.last=Math.max(o.last,x.t); });
+  return [...m.values()].filter(o=>o.qty!==0).sort((a,b)=>b.last-a.last);
+}
+function drawRecent(){
+  $('#recentcard').hidden=!recent.length;
+  const rows=sessionRows();
+  const tot=rows.reduce((s,o)=>s+o.qty,0);
+  $('#sessum').textContent = rows.length ? rows.length+' 个 SKU · 合计 '+tot+' 卷' : '';
+  $('#recent').innerHTML=recent.slice(0,20).map(x=>`<div class="logrow">
+    <div class="d ${x.d>0?'p':'m'}">${x.d>0?'+':''}${x.d}</div>${swatch(x.r)}
+    <div class="n">${esc(x.r.c)} <span style="color:var(--mut);font-size:11px">${esc(x.r.m.replace('PLA ',''))}${x.r.s?' · 带轴':''}</span></div>
+    <div class="t">${new Date(x.t).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
+}
+
+/* ---------- camera ---------- */
+let reader=null, track=null, lastCode='', lastAt=0, scanning=false, rafId=null;
+let armed=true, misses=0;
+function setArmed(v){
+  if(armed===v) return;
+  armed=v;
+  const b=$('#lockbadge'); if(b) b.style.display = v ? 'none' : 'block';
+  const r=$('#ret'); if(r) r.classList.toggle('locked', !v);
+}
+function onMiss(){ if(++misses>=9) setArmed(true); }
+function onCode(t){
+  if(!t){ onMiss(); return; }
+  misses=0;
+  $('#rawline').style.display='block';
+  $('#rawtxt').textContent=t;
+  const now=Date.now();
+  if(!armed && t===lastCode) return;
+  if(now-lastAt<2200) return;
+  setArmed(false); lastCode=t; lastAt=now; handle(t,'camera');
+}
+async function startCam(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    $('#camsg').textContent='这个浏览器不支持摄像头，请用手动输入。'; return;
+  }
+  const native = ('BarcodeDetector' in window);
+  if(!native && !window.ZXing){ $('#camsg').textContent='扫码库没加载成功，检查网络后刷新。'; return; }
+  try{
+    if(native){
+      const stream=await navigator.mediaDevices.getUserMedia(
+        {video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
+      const v=$('#video'); v.srcObject=stream; await v.play();
+      const det=new BarcodeDetector({formats:['qr_code','ean_13','code_128','ean_8','upc_a','data_matrix']});
+      scanning=true;
+      const tick=async()=>{
+        if(!scanning) return;
+        try{ const cs=await det.detect(v); if(cs&&cs.length) onCode(cs[0].rawValue); else onMiss(); }catch(e){ onMiss(); }
+        if(scanning) rafId=setTimeout(tick,90);
+      };
+      tick();
+    }else{
+      const hints=new Map(), F=ZXing.BarcodeFormat;
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[F.QR_CODE,F.EAN_13,F.CODE_128,F.EAN_8]);
+      reader=new ZXing.BrowserMultiFormatReader(hints,{delayBetweenScanAttempts:60});
+      await reader.decodeFromConstraints(
+        {video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}},
+        $('#video'), (result)=>{ if(result) onCode(result.getText()); else onMiss(); });
+    }
+    $('#camoff').hidden=true; $('#ret').hidden=false; $('#camtop').hidden=false;
+    const s=$('#video').srcObject; track=s&&s.getVideoTracks()[0];
+    try{ if(track&&track.getCapabilities){ const c=track.getCapabilities();
+      if(c.focusMode&&c.focusMode.includes('continuous')) await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); } }catch(e){}
+    try{ if(track&&track.getCapabilities&&track.getCapabilities().torch) $('#torch').hidden=false; }catch(e){}
+    try{ const c=track&&track.getCapabilities&&track.getCapabilities();
+      if(c&&c.zoom&&c.zoom.max>c.zoom.min){
+        const z=$('#zoom'); z.min=c.zoom.min; z.max=Math.min(c.zoom.max,c.zoom.min*4);
+        z.step=c.zoom.step||.1; z.value=c.zoom.min; $('#zoomwrap').hidden=false;
+        z.oninput=async()=>{ $('#zoomv').textContent=Number(z.value).toFixed(1)+'×';
+          try{ await track.applyConstraints({advanced:[{zoom:Number(z.value)}]}); }catch(e){} };
+      } }catch(e){}
+    try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  }catch(e){
+    $('#camsg').textContent='打不开摄像头：'+(e&&e.message||e)+'。需要 HTTPS，并在浏览器里允许相机权限。';
+  }
+}
+function stopCam(){
+  scanning=false; if(rafId){clearTimeout(rafId);rafId=null;}
+  armed=true; misses=0; lastCode=''; const _b=$('#lockbadge'); if(_b)_b.style.display='none';
+  $('#ret').classList.remove('locked');
+  try{reader&&reader.reset()}catch(e){}
+  try{const v=$('#video'); if(v.srcObject){v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null;}}catch(e){}
+  try{track&&track.stop()}catch(e){}
+  reader=null;track=null;
+  $('#camoff').hidden=false; $('#ret').hidden=true; $('#camtop').hidden=true; $('#torch').hidden=true;
+  $('#zoomwrap').hidden=true;
+}
+$('#startcam').onclick=startCam;
+$('#stopcam').onclick=stopCam;
+let torchOn=false;
+$('#torch').onclick=async()=>{ if(!track)return; torchOn=!torchOn;
+  try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); $('#torch').textContent=torchOn?'关灯':'手电筒'; }catch(e){} };
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) stopCam(); });
+
+/* ---------- high-res photo fallback ---------- */
+$('#shotb').onclick=()=>$('#shotf').click();
+$('#shotf').onchange=async e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
+  fb.innerHTML='<div class="toast warn"><div class="tt"><b>识别中…</b></div></div>';
+  let text=null;
+  const url=URL.createObjectURL(f);
+  try{
+    if('BarcodeDetector' in window){
+      try{ const bmp=await createImageBitmap(f);
+        const det=new BarcodeDetector();
+        const cs=await det.detect(bmp); if(cs&&cs.length) text=cs[0].rawValue;
+      }catch(_){}
+    }
+    if(!text && window.ZXing){
+      for(const scale of [1,2]){
+        try{
+          let src=url;
+          if(scale>1){
+            const bmp=await createImageBitmap(f);
+            const cv=document.createElement('canvas');
+            cv.width=bmp.width*scale; cv.height=bmp.height*scale;
+            cv.getContext('2d').drawImage(bmp,0,0,cv.width,cv.height);
+            src=cv.toDataURL('image/png');
+          }
+          const rd=new ZXing.BrowserMultiFormatReader();
+          const res=await rd.decodeFromImageUrl(src);
+          if(res){ text=res.getText(); break; }
+        }catch(_){}
+      }
+    }
+  }catch(_){}
+  URL.revokeObjectURL(url);
+  if(text){ $('#rawline').style.display='block'; $('#rawtxt').textContent=text;
+    lastCode=text; lastAt=Date.now(); handle(text,'photo'); }
+  else { beep(true);
+    fb.innerHTML='<div class="toast err"><div class="tt"><b>照片里没识别出条码</b><span>把 QR 拍满画面、对正、别晃；或者直接手输下面的 SKU</span></div></div>'; }
+};
+
+/* ---------- manual input ---------- */
+const input=$('#code');
+input.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();const v=input.value;input.value='';if(v.trim()){$('#rawline').style.display='block';$('#rawtxt').textContent=v.trim();handle(v,'manual');}} });
+$('#modeseg').onclick=e=>{const b=e.target.closest('button');if(!b)return;mode=Number(b.dataset.q);
+  $$('#modeseg button').forEach(x=>x.setAttribute('aria-pressed',x===b));};
+$('#dirseg').onclick=e=>{const b=e.target.closest('button');if(!b)return;dir=Number(b.dataset.d);
+  $$('#dirseg button').forEach(x=>x.setAttribute('aria-pressed',x===b));};
+</script>
+<script>
+/* ---------- tabs ---------- */
+$$('.tab').forEach(t=>t.onclick=()=>{
+  $$('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  $$('section').forEach(s=>s.classList.toggle('on',s.id==='s-'+t.dataset.t));
+  if(t.dataset.t!=='scan') stopCam();
+  if(t.dataset.t==='find'){ renderFind(); $('#fq').focus(); }
+});
+/* ---------- filters ---------- */
+const F={instock:true,basic:false,matte:false,spool:false,nospool:false};
+$('#filters').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;
+  const f=b.dataset.f;F[f]=!F[f];
+  if(f==='basic'&&F.basic)F.matte=false; if(f==='matte'&&F.matte)F.basic=false;
+  if(f==='spool'&&F.spool)F.nospool=false; if(f==='nospool'&&F.nospool)F.spool=false;
+  $$('#filters .chip').forEach(c=>c.setAttribute('aria-pressed',!!F[c.dataset.f]));render();};
+$('#q').addEventListener('input',render);
+const matches=(r,q)=>{ if(!q) return true;
+  const hay=(r.c+' '+r.cc+' '+r.k+' '+r.e+' '+r.m).toLowerCase();
+  return q.toLowerCase().split(/\s+/).every(t=>hay.includes(t)); };
+
+function render(){
+  const q=$('#q').value.trim();
+  let rows=CATALOG.filter(r=>{
+    if(F.basic&&r.m!=='PLA Basic')return false;
+    if(F.matte&&r.m!=='PLA Matte')return false;
+    if(F.spool&&!r.s)return false;
+    if(F.nospool&&r.s)return false;
+    if(F.instock&&qtyOf(r)<=0)return false;
+    return matches(r,q);});
+  rows.sort((a,b)=>qtyOf(b)-qtyOf(a)||a.m.localeCompare(b.m)||a.c.localeCompare(b.c));
+  const tot=CATALOG.reduce((s,r)=>s+qtyOf(r),0);
+  $('#st-spools').textContent=tot;
+  $('#st-skus').textContent=CATALOG.filter(r=>qtyOf(r)>0).length;
+  $('#st-boxes').textContent=(tot/10).toFixed(tot%10?1:0);
+  $('#list').innerHTML=rows.length?rows.map(r=>{const n=qtyOf(r);
+    return `<div class="row" data-id="${r.id}">${swatch(r)}
+      <div class="info"><div class="nm">${esc(r.c)} ${r.cc?`<span style="color:var(--mut);font-weight:500;font-size:12px">${r.cc}</span>`:''} ${spoolPill(r)}</div>
+      <div class="meta">${esc(r.m)} · ${r.k}</div></div>
+      <div class="qty ${n?'':'zero'}"><b>${n}</b><i>${n>=10?Math.floor(n/10)+'箱'+(n%10?'+'+n%10:''):'卷'}</i></div></div>`;
+  }).join('')
+  :`<div class="empty">${F.instock?'这些条件下没有库存。<br>取消「只看有货」可浏览全部 '+CATALOG.length+' 个 SKU。':'没有匹配的 SKU。'}</div>`;
+}
+/* ---------- find tab ---------- */
+const CN = {black:'黑',white:'白',red:'红',blue:'蓝',green:'绿',yellow:'黄',orange:'橙',
+ purple:'紫',pink:'粉',gray:'灰',grey:'灰',brown:'棕',gold:'金',silver:'银',cyan:'青',
+ beige:'米',bronze:'古铜',magenta:'品红'};
+function cnHay(r){
+  let x='';
+  const lc=r.c.toLowerCase();
+  for(const k in CN) if(lc.includes(k)) x+=CN[k];
+  return x;
+}
+let fMat='PLA Basic', fSp='1';
+$('#fmat').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;fMat=b.dataset.v;
+  $$('#fmat .chip').forEach(c=>c.setAttribute('aria-pressed',c===b));renderFind();};
+$('#fsp').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;fSp=b.dataset.v;
+  $$('#fsp .chip').forEach(c=>c.setAttribute('aria-pressed',c===b));renderFind();};
+$('#fq').addEventListener('input',renderFind);
+
+function renderFind(){
+  const q=$('#fq').value.trim().toLowerCase();
+  let rows=CATALOG.filter(r=>r.m===fMat && (r.s?'1':'0')===fSp);
+  if(q) rows=rows.filter(r=>(r.c+' '+r.cc+' '+r.k+' '+cnHay(r)).toLowerCase().includes(q));
+  rows.sort((a,b)=>a.c.localeCompare(b.c));
+  $('#fgrid').innerHTML = rows.length ? rows.map(r=>{
+    const n=qtyOf(r);
+    return `<div class="gi" data-id="${r.id}">
+      ${r.h?`<div class="sw" style="background:${r.h}"></div>`:`<div class="sw multi"></div>`}
+      <div class="gq ${n?'':'z'}">${n}</div>
+      <div class="gn">${esc(r.c)}</div><div class="gc">${r.cc||''}</div></div>`;
+  }).join('') : '<div class="empty">这个组合下没有这个颜色。<br>换一下上面的材料或带轴筛选。</div>';
+}
+$('#fgrid').onclick=e=>{const g=e.target.closest('.gi');if(!g)return;openD(CATALOG[Number(g.dataset.id)]);};
+
+/* ---------- detail ---------- */
+const dlg=$('#dlg');
+$('#list').onclick=e=>{const row=e.target.closest('.row');if(!row)return;openD(CATALOG[Number(row.dataset.id)]);};
+function openD(r){
+  const n=qtyOf(r);
+  const short=(r.k.match(/^([A-Z0-9]+-[A-Z0-9]+)/)||[,r.k])[1];
+  $('#dlgbody').innerHTML=`<div style="display:flex;gap:12px;align-items:center">
+    ${r.h?`<div class="sw" style="background:${r.h};width:48px;height:48px"></div>`:`<div class="sw multi" style="width:48px;height:48px"></div>`}
+    <div style="flex:1"><h3>${esc(r.c)}</h3>
+    <div style="font-size:12.5px;color:var(--mut);margin-top:2px">${esc(r.m)} ${r.cc?'· 色号 '+r.cc:''} ${r.s?'· 带轴 SPL':'· 不带轴 SPLFREE'}</div></div>
+    <div class="qty ${n?'':'zero'}"><b style="font-size:26px">${n}</b><i>卷</i></div></div>
+    <div style="background:#f8fafc;border:1px solid var(--line);border-radius:13px;padding:12px 10px;margin-top:14px">
+      <div style="font-size:10.5px;font-weight:600;color:var(--mut);letter-spacing:.05em;text-align:center">箱子标签上找这串</div>
+      <div class="bigsku">${short}</div>
+      <div class="fullsku">${r.k}</div>
+    </div>
+    <button class="copyb" id="cp">复制完整 SKU</button>
+    <div class="dm">单卷 EAN（小盒条码）<code>${r.e}</code><br>
+    单价 US$${r.p.toFixed(2)} · 库存 ${n>=10?Math.floor(n/10)+' 箱 + '+(n%10)+' 卷':n+' 卷'}</div>
+    <div class="adj"><button class="minus" data-a="-10">−10</button><button class="minus" data-a="-1">−1</button>
+    <button class="plus" data-a="1">+1</button><button class="plus" data-a="10">+10</button></div>
+    <button class="close">关闭</button>`;
+  const cp=$('#cp'); if(cp) cp.onclick=async()=>{
+    try{ await navigator.clipboard.writeText(r.k); cp.textContent='已复制 ✓';
+      setTimeout(()=>{cp.textContent='复制完整 SKU'},1600); }catch(e){ cp.textContent='复制失败，长按上面那行选中'; } };
+  $('#dlgbody').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{move(r,Number(b.dataset.a),'manual');openD(r);});
+  $('#dlgbody .close').onclick=()=>dlg.close();
+  if(!dlg.open) dlg.showModal();
+}
+/* ---------- log ---------- */
+function renderLog(){
+  const el=$('#loglist');
+  if(!logs.length){el.innerHTML='<div class="empty">暂无记录</div>';return;}
+  el.innerHTML=logs.slice(0,200).map(l=>{const d=new Date(l.ts);
+    return `<div class="logrow"><div class="d ${l.delta>0?'p':'m'}">${l.delta>0?'+':''}${l.delta}</div>
+      <div class="n">${esc(l.name||l.sku)}</div>
+      <div class="t">${d.toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'})} ${d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+  }).join('');
+}
+/* ---------- export helpers ---------- */
+const cell=v=>{const t=String(v==null?'':v);return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
+const toCSV=rows=>'﻿'+rows.map(r=>r.map(cell).join(',')).join('\r\n');
+const toTSV=rows=>rows.map(r=>r.map(v=>String(v==null?'':v).replace(/[\t\n]/g,' ')).join('\t')).join('\n');
+const stamp=()=>{const d=new Date();const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes());};
+function download(name,text){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
+  a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+}
+async function copyRows(rows,btn){
+  const prev=btn.textContent;
+  try{ await navigator.clipboard.writeText(toTSV(rows)); btn.textContent='已复制 ✓'; }
+  catch(e){ btn.textContent='复制失败'; }
+  setTimeout(()=>{btn.textContent=prev;},1800);
+}
+const fmtD=t=>{const d=new Date(t),p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());};
+const HEAD_BATCH=['日期时间','材料','颜色','色号','带轴','SKU','EAN','数量(卷)','箱数','单价USD','小计USD','现有库存'];
+function batchRows(){
+  const out=[HEAD_BATCH];
+  sessionRows().forEach(o=>{const r=o.r;
+    out.push([fmtD(o.last),r.m,r.c,r.cc,r.s?'带轴':'不带轴',r.k,r.e,o.qty,
+      (o.qty/10).toFixed(o.qty%10?1:0),r.p.toFixed(2),(o.qty*r.p).toFixed(2),qtyOf(r)]);});
+  return out;
+}
+const HEAD_STOCK=['材料','颜色','色号','带轴','SKU','EAN','库存(卷)','箱数','单价USD','货值USD'];
+function stockRows(){
+  const out=[HEAD_STOCK];
+  CATALOG.forEach(r=>{const n=qtyOf(r); if(!n) return;
+    out.push([r.m,r.c,r.cc,r.s?'带轴':'不带轴',r.k,r.e,n,(n/10).toFixed(n%10?1:0),r.p.toFixed(2),(n*r.p).toFixed(2)]);});
+  return out;
+}
+const HEAD_LOG=['日期时间','方向','变动(卷)','材料','颜色','SKU','EAN','操作后库存','来源'];
+function logRows(){
+  const out=[HEAD_LOG];
+  logs.forEach(l=>{const r=BY_SKU.get(String(l.sku||'').toUpperCase());
+    out.push([fmtD(l.ts),l.delta>0?'入库':'出库',l.delta,r?r.m:'',r?r.c:(l.name||''),l.sku,l.ean||'',l.after,l.how||'']);});
+  return out;
+}
+$('#sx-csv').onclick=()=>download('收货批次-'+stamp()+'.csv',toCSV(batchRows()));
+$('#sx-copy').onclick=e=>copyRows(batchRows(),e.target);
+$('#sx-clear').onclick=()=>{ if(!recent.length) return;
+  if(confirm('结束本批次？清单会清空，库存数字不变。')){ recent=[]; saveSession(); drawRecent(); fb.innerHTML=''; } };
+if(navigator.canShare){
+  const sb=$('#sx-share'); sb.hidden=false;
+  sb.onclick=async()=>{
+    try{
+      const f=new File([toCSV(batchRows())],'收货批次-'+stamp()+'.csv',{type:'text/csv'});
+      if(navigator.canShare({files:[f]})) await navigator.share({files:[f],title:'Filament 收货批次'});
+      else await navigator.share({title:'Filament 收货批次',text:toTSV(batchRows())});
+    }catch(e){}
+  };
+}
+$('#exp').onclick=()=>download('库存快照-'+stamp()+'.csv',toCSV(stockRows()));
+$('#exp-copy').onclick=e=>copyRows(stockRows(),e.target);
+$('#exp-log').onclick=()=>download('出入库流水-'+stamp()+'.csv',toCSV(logRows()));
+$('#imp').onchange=e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const lines=String(rd.result).replace(/^﻿/,'').trim().split(/\r?\n/);
+      const hdr=lines[0].split(',').map(s=>s.trim());
+      const iS=hdr.indexOf('sku'), iQ=hdr.indexOf('qty');
+      if(iS<0||iQ<0) throw new Error('CSV 缺少 sku / qty 列');
+      let n=0; const ns={};
+      lines.slice(1).forEach(ln=>{const c=ln.split(',');
+        const sku=(c[iS]||'').trim().replace(/^"|"$/g,''), q=parseInt(c[iQ],10);
+        if(BY_SKU.has(sku.toUpperCase())&&q>0){ns[sku]=q;n++;}});
+      stock=ns;logs.unshift({ts:Date.now(),sku:'-',name:'导入备份（'+n+' 个 SKU）',delta:0,after:0,how:'import'});
+      save();render();renderLog();renderFind();drawRecent();
+      fb.innerHTML='<div class="toast ok"><div class="tt"><b>已导入 '+n+' 个 SKU 的库存</b></div></div>';
+    }catch(err){ alert('导入失败：'+err.message); }
+  };
+  rd.readAsText(f);
+};
+render();renderLog();renderFind();drawRecent();
+$('#sub').textContent='PLA Basic + PLA Matte · '+CATALOG.length+' 个 SKU';
+</script></body></html>
