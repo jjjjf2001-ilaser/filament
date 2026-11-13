@@ -201,12 +201,14 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
   </div>
   <div id="recent"></div>
   <div class="tools" style="margin-top:12px">
+   <button id="sx-in" style="border-color:#bbf7d0;background:#f0fdf4;color:var(--g-d)">复制条码 → Scan IN</button>
+   <button id="sx-out" hidden style="border-color:#fecdd3;background:#fff1f2;color:#be123c">复制条码 → Scan OUT</button>
    <button id="sx-csv">导出 CSV</button>
-   <button id="sx-copy">复制到 Excel</button>
+   <button id="sx-copy">复制明细</button>
    <button id="sx-share" hidden>分享</button>
    <button id="sx-clear" style="color:#be123c;border-color:#fecdd3">结束批次</button>
   </div>
-  <div class="hint">「结束批次」只清空这张清单，库存数字不受影响。</div>
+  <div class="hint">「复制条码」按每卷一行输出 EAN，粘到 Google 表 Scan IN / Scan OUT 的 <b>Barcode 列</b>（A 列），数量列默认 1，其余公式自动算。不要粘到 B 或 F 列，那是公式。</div>
  </div>
 </section>
 <section id="s-find">
@@ -359,7 +361,12 @@ function drawRecent(){
   $('#recentcard').hidden=!recent.length;
   const rows=sessionRows();
   const tot=rows.reduce((s,o)=>s+o.qty,0);
-  $('#sessum').textContent = rows.length ? rows.length+' 个 SKU · 合计 '+tot+' 卷' : '';
+  const pos=rows.filter(o=>o.qty>0).reduce((s,o)=>s+o.qty,0);
+  const neg=rows.filter(o=>o.qty<0).reduce((s,o)=>s-o.qty,0);
+  $('#sessum').textContent = rows.length
+    ? rows.length+' 个 SKU'+(pos?' · 入 '+pos+' 卷':'')+(neg?' · 出 '+neg+' 卷':'') : '';
+  const ob=$('#sx-out'); if(ob) ob.hidden = !neg;
+  const ib=$('#sx-in'); if(ib) ib.hidden = !pos;
   $('#recent').innerHTML=recent.slice(0,20).map(x=>`<div class="logrow">
     <div class="d ${x.d>0?'p':'m'}">${x.d>0?'+':''}${x.d}</div>${swatch(x.r)}
     <div class="n">${esc(x.r.c)} <span style="color:var(--mut);font-size:11px">${esc(x.r.m.replace('PLA ',''))}${x.r.s?' · 带轴':''}</span></div>
@@ -628,28 +635,48 @@ async function copyRows(rows,btn){
 }
 const fmtD=t=>{const d=new Date(t),p=n=>String(n).padStart(2,'0');
   return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());};
-const HEAD_BATCH=['日期时间','材料','颜色','色号','带轴','SKU','EAN','数量(卷)','箱数','单价USD','小计USD','现有库存'];
+const dmy=t=>{const d=new Date(t),p=n=>String(n).padStart(2,'0');
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear();};
+const HEAD_BATCH=['Barcode','Filament','Qty','Date','方向','Box SKU','色号','箱数','单价USD','小计USD'];
 function batchRows(){
   const out=[HEAD_BATCH];
-  sessionRows().forEach(o=>{const r=o.r;
-    out.push([fmtD(o.last),r.m,r.c,r.cc,r.s?'带轴':'不带轴',r.k,r.e,o.qty,
-      (o.qty/10).toFixed(o.qty%10?1:0),r.p.toFixed(2),(o.qty*r.p).toFixed(2),qtyOf(r)]);});
+  sessionRows().forEach(o=>{const r=o.r, q=Math.abs(o.qty);
+    out.push([r.e,sheetName(r),q,dmy(o.last),o.qty>0?'Scan IN':'Scan OUT',r.k,r.cc,
+      (q/10).toFixed(q%10?1:0),r.p.toFixed(2),(q*r.p).toFixed(2)]);});
   return out;
 }
-const HEAD_STOCK=['材料','颜色','色号','带轴','SKU','EAN','库存(卷)','箱数','单价USD','货值USD'];
+const HEAD_STOCK=['Barcode','Filament','Current stock','Box SKU','色号','箱数','单价USD','货值USD'];
 function stockRows(){
   const out=[HEAD_STOCK];
   CATALOG.forEach(r=>{const n=qtyOf(r); if(!n) return;
-    out.push([r.m,r.c,r.cc,r.s?'带轴':'不带轴',r.k,r.e,n,(n/10).toFixed(n%10?1:0),r.p.toFixed(2),(n*r.p).toFixed(2)]);});
+    out.push([r.e,sheetName(r),n,r.k,r.cc,(n/10).toFixed(n%10?1:0),r.p.toFixed(2),(n*r.p).toFixed(2)]);});
   return out;
 }
-const HEAD_LOG=['日期时间','方向','变动(卷)','材料','颜色','SKU','EAN','操作后库存','来源'];
+const HEAD_LOG=['日期时间','方向','变动(卷)','Filament','Barcode','Box SKU','操作后库存','来源'];
 function logRows(){
   const out=[HEAD_LOG];
   logs.forEach(l=>{const r=BY_SKU.get(String(l.sku||'').toUpperCase());
-    out.push([fmtD(l.ts),l.delta>0?'入库':'出库',l.delta,r?r.m:'',r?r.c:(l.name||''),l.sku,l.ean||'',l.after,l.how||'']);});
+    out.push([fmtD(l.ts),l.delta>0?'Scan IN':'Scan OUT',l.delta,r?sheetName(r):(l.name||''),l.ean||'',l.sku,l.after,l.how||'']);});
   return out;
 }
+const sheetName=r=>r.m+(r.s?' w/ Spool':' Refill')+' - '+r.c;
+function eanColumn(sign){
+  const out=[];
+  sessionRows().forEach(o=>{ const q=o.qty*sign; if(q<=0) return;
+    for(let i=0;i<q;i++) out.push([o.r.e]); });
+  return out;
+}
+async function copyEan(sign,btn){
+  const rows=eanColumn(sign);
+  const prev=btn.textContent;
+  if(!rows.length){ btn.textContent='本批次没有'+(sign>0?'入库':'出库'); setTimeout(()=>{btn.textContent=prev;},1800); return; }
+  try{ await navigator.clipboard.writeText(rows.map(r=>r[0]).join('\n'));
+    btn.textContent='已复制 '+rows.length+' 行 ✓'; }
+  catch(e){ btn.textContent='复制失败'; }
+  setTimeout(()=>{btn.textContent=prev;},2400);
+}
+$('#sx-in').onclick=e=>copyEan(1,e.target);
+$('#sx-out').onclick=e=>copyEan(-1,e.target);
 $('#sx-csv').onclick=()=>download('收货批次-'+stamp()+'.csv',toCSV(batchRows()));
 $('#sx-copy').onclick=e=>copyRows(batchRows(),e.target);
 $('#sx-clear').onclick=()=>{ if(!recent.length) return;
