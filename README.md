@@ -1,6 +1,6 @@
 # iLaser Filament Stock
 
-Bambu Lab filament inventory scanner and lookup (PLA Basic, PLA Matte, PLA Silk, PLA Silk+, PLA Tough+, PETG Basic — 169 SKUs).
+Bambu Lab filament inventory scanner and lookup (PLA Basic, PLA Matte, PLA Silk, PLA Silk+, PLA Tough+, PETG Basic — 169 SKUs — plus 5 Bambu build plates).
 
 **Open it here:** https://jjjjf2001-ilaser.github.io/filament/
 
@@ -12,6 +12,9 @@ Bambu Lab filament inventory scanner and lookup (PLA Basic, PLA Matte, PLA Silk,
 Exports use the same naming as the iLaser Main Filament Inventory sheet
 ("PLA Basic w/ Spool - Black"). "Copy barcodes" gives one EAN per spool,
 ready to paste into the Barcode column of the Scan IN / Scan OUT sheets.
+
+Build plates are reference only: they are in Find and Stock, but the
+"Copy barcodes" exports skip them, so they never reach the Google Sheet.
 
 Stock is held in the browser's local storage — export a backup before
 switching device or clearing data.
