@@ -1,6 +1,6 @@
 # iLaser Filament Stock
 
-Bambu Lab filament inventory scanner and lookup (PLA Basic, PLA Matte, PLA Silk, PLA Silk+, PLA Tough+, PLA Marble, PLA Translucent, PETG Basic — 181 SKUs — plus 5 Bambu build plates).
+Bambu Lab filament inventory scanner and lookup (40 product lines — 369 filament SKUs plus 5 build plates).
 
 **Open it here:** https://jjjjf2001-ilaser.github.io/filament/
 
