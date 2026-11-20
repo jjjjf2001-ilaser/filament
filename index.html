@@ -137,6 +137,13 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
 .logrow .t{flex:0 0 auto;font-size:10.5px;color:var(--mut)}
 .logrow .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tools{display:flex;gap:7px;flex-wrap:wrap}
+.pickcard{display:flex;gap:14px;align-items:center;background:var(--card);border-radius:16px;
+ box-shadow:var(--sh);padding:18px;margin-bottom:13px;cursor:pointer;transition:.12s}
+.pickcard:active{transform:scale(.985)}
+.pickcard .pi{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto}
+.pickcard .pi svg{width:28px;height:28px}
+.pickcard b{display:block;font-size:17px;font-weight:650}
+.pickcard span{display:block;font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.45}
 .tools button,.tools label{border:1px solid var(--line);background:var(--card);border-radius:10px;font:inherit;
  font-size:12.5px;font-weight:600;padding:9px 13px;cursor:pointer;color:var(--ink)}
 </style>
@@ -145,22 +152,32 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
 <header>
  <div class="hd">
   <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3 6.5 3.6L12 11.5 5.5 7.9 12 4.3ZM5 9.6l6 3.3v6.8l-6-3.3V9.6Zm8 10.1v-6.8l6-3.3v6.8l-6 3.3Z"/></svg></div>
-  <div style="flex:1"><h1>Filament Stock</h1><div class="sub" id="sub">iLaser · Bambu Lab PLA</div></div>
+  <div style="flex:1"><h1 id="apptitle">iLaser Stock</h1><div class="sub" id="sub">Bambu Lab</div></div>
+  <button id="modebtn" hidden style="border:1px solid var(--line);background:var(--card);border-radius:9px;
+   font:inherit;font-size:11.5px;font-weight:650;padding:6px 10px;cursor:pointer">Switch</button>
  </div>
- <div class="tabs" role="tablist">
-  <button class="tab" role="tab" aria-selected="true" data-t="scan">Scan</button>
-  <button class="tab" role="tab" aria-selected="false" data-t="find">Find</button>
-  <button class="tab" role="tab" aria-selected="false" data-t="stock">Stock</button>
-  <button class="tab" role="tab" aria-selected="false" data-t="log">Log</button>
- </div>
+ <div class="tabs" role="tablist" id="tabs" hidden></div>
 </header>
 <div class="wrap">
+<section id="chooser" class="on" style="padding-top:22px">
+ <div class="pickcard" data-mode="filament">
+  <div class="pi" style="background:linear-gradient(135deg,#00AE42,#0086D6)">
+   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4" fill="none" stroke="#fff" stroke-width="2.1"/><circle cx="12" cy="12" r="2.6" fill="#fff"/></svg></div>
+  <div style="flex:1"><b>Filament</b><span>Cartons and spools — scan in, scan out, find a colour</span></div>
+ </div>
+ <div class="pickcard" data-mode="machine">
+  <div class="pi" style="background:linear-gradient(135deg,#15181d,#4b5563)">
+   <svg viewBox="0 0 24 24"><rect x="3.6" y="4.4" width="16.8" height="15.2" rx="2.2" fill="none" stroke="#fff" stroke-width="2.1"/><path d="M7.4 9h9.2M7.4 13h5.6" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div>
+  <div style="flex:1"><b>Machines</b><span>Printers and AMS — scan each serial number in</span></div>
+ </div>
+</section>
 <div id="updbar" hidden style="background:#111827;color:#fff;border-radius:12px;padding:11px 13px;
  margin-top:12px;display:flex;gap:10px;align-items:center;font-size:13px">
  <span style="flex:1">A newer version is available.</span>
  <button id="updbtn" style="border:0;background:#fff;color:#111827;font:inherit;font-size:12.5px;
   font-weight:650;padding:7px 13px;border-radius:9px;cursor:pointer">Reload</button></div>
 <section id="s-scan" class="on">
+ <div id="camwrap">
  <div class="cam" id="cam">
   <video id="video" playsinline muted></video>
   <div class="recticle" id="ret" hidden></div>
@@ -182,6 +199,8 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
    font-size:13px;font-weight:600;padding:10px;border-radius:10px;cursor:pointer">Not reading? Take a photo instead</button>
   <input type="file" id="shotf" accept="image/*" capture="environment" hidden>
  </div>
+ </div>
+ <div id="f-camslot"></div>
  <div class="card">
   <div class="seg" id="modeseg">
    <button data-q="10" aria-pressed="true">Carton<small>SKU · 10 spools</small></button>
@@ -254,6 +273,73 @@ dialog::backdrop{background:rgba(15,18,23,.45)}
  </div><div class="hint">Stock lives in this browser only. Export a backup before changing device or clearing data.</div></div>
 </section>
 <section id="s-log"><div class="card"><div id="loglist"><div class="empty">No movements yet</div></div></div></section>
+
+<section id="m-scan">
+ <div id="m-camslot"></div>
+ <div class="card" id="m-step1">
+  <label class="fl">Step 1 — which machine?</label>
+  <input type="text" id="mmodel" placeholder="Scan the EAN, or type a model e.g. P1S Combo" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <div id="mmatches"></div>
+ </div>
+ <div class="card" id="m-step2" hidden>
+  <div style="display:flex;gap:11px;align-items:center;margin-bottom:12px">
+   <div style="flex:1;min-width:0">
+    <div style="font-size:10.5px;font-weight:600;color:var(--mut);letter-spacing:.04em">NOW SCANNING</div>
+    <div id="mcur" style="font-size:17px;font-weight:650;line-height:1.2;margin-top:2px"></div>
+    <div id="mcursku" style="font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums;margin-top:2px"></div>
+   </div>
+   <div class="qty"><b id="mcount" style="font-size:26px">0</b><i>this model</i></div>
+  </div>
+  <div class="dir" id="mdirseg">
+   <button data-d="1" aria-pressed="true">Stock IN</button>
+   <button class="out" data-d="-1" aria-pressed="false">Stock OUT</button>
+  </div>
+  <label class="fl" for="msn">Step 2 — scan each serial number</label>
+  <input type="text" id="msn" placeholder="Product SN" autocomplete="off" autocapitalize="characters" spellcheck="false">
+  <div class="hint">Scan the <b>Product SN</b> barcode, not the Box SN. Each serial counts once; a repeat is flagged.</div>
+  <div class="tools" style="margin-top:12px">
+   <button id="mnext" style="border-color:#bbf7d0;background:#f0fdf4;color:var(--g-d)">Next model →</button>
+   <button id="mdone">Finish batch</button>
+  </div>
+ </div>
+ <div id="mfeedback"></div>
+ <div class="card" id="mbatchcard" hidden>
+  <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+   <label class="fl" style="margin:0;flex:1">This batch</label>
+   <span id="msessum" style="font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums"></span>
+  </div>
+  <div id="mrecent"></div>
+  <div class="tools" style="margin-top:12px">
+   <button id="mx-csv">Export CSV</button>
+   <button id="mx-copy">Copy table</button>
+   <button id="mx-clear" style="color:#be123c;border-color:#fecdd3">End batch</button>
+  </div>
+ </div>
+</section>
+
+<section id="m-stock">
+ <div class="stat">
+  <div><b id="mst-units">0</b><span>Machines</span></div>
+  <div><b id="mst-models">0</b><span>Models held</span></div>
+  <div><b id="mst-value">0</b><span>Value US$</span></div>
+ </div>
+ <div class="card">
+  <input type="search" id="mq" placeholder="Search model / SKU / EAN / serial…" autocomplete="off">
+  <div class="filters" id="mfilters">
+   <button class="chip" data-f="instock" aria-pressed="true">In stock only</button>
+   <button class="chip" data-f="printer" aria-pressed="false">Printers</button>
+   <button class="chip" data-f="ams" aria-pressed="false">AMS</button>
+  </div>
+ </div>
+ <div class="card"><div id="mlist"></div></div>
+ <div class="card"><label class="fl">Export / backup</label><div class="tools">
+  <button id="mexp">Serial list CSV</button>
+  <button id="mexp-copy">Copy serial list</button>
+  <label>Restore backup<input type="file" id="mimp" accept=".csv,text/csv" hidden></label>
+ </div><div class="hint">Every serial held, with its model and the date it was scanned in.</div></div>
+</section>
+
+<section id="m-log"><div class="card"><div id="mloglist"><div class="empty">No movements yet</div></div></div></section>
 </div>
 <dialog id="dlg"><div class="dlg" id="dlgbody"></div></dialog>
 <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
@@ -730,7 +816,7 @@ $('#imp').onchange=e=>{
       save();render();renderLog();renderFind();drawRecent();
 
 /* ---------- build / update check ---------- */
-const BUILD='20261120-1725';
+const BUILD='20261120-2316';
 (async()=>{
   try{
     const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
@@ -750,7 +836,7 @@ const BUILD='20261120-1725';
 render();renderLog();renderFind();drawRecent();
 
 /* ---------- build / update check ---------- */
-const BUILD='20261120-1725';
+const BUILD='20261120-2316';
 (async()=>{
   try{
     const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
@@ -763,4 +849,349 @@ const BUILD='20261120-1725';
   }catch(e){}
 })();
 $('#sub').textContent=MATERIALS.join(' · ')+' — '+CATALOG.length+' SKUs · build '+BUILD;
-</script></body></html>
+</script>
+<script>
+/* =================== MACHINES =================== */
+const MACHINES = [{"name":"P1S Combo","sku":"PF001-U+SA001-UK","ean":"6975337033189","p":425.0,"wt":"22.02","comp":"P1S","fam":"P1S Combo","kind":"Printer"},{"name":"P1S","sku":"PF001-U-UK","ean":"6975337033127","p":305.0,"wt":"18","comp":"P1S","fam":"P1S","kind":"Printer"},{"name":"A1 mini-Combo-UK","sku":"PF002-M+SA005-UK","ean":"6975337034179","p":226.0,"wt":"10.08","comp":"A1 mini","fam":"A1 mini","kind":"Printer"},{"name":"AMS","sku":"SA001","ean":"6975337030034","p":155.0,"wt":"4.52","comp":"P1P,P1S,X1C","fam":"AMS","kind":"AMS"},{"name":"A1 mini-UK","sku":"PF002-M-UK","ean":"6975337036180","p":132.0,"wt":"8.05","comp":"A1 mini","fam":"A1 mini","kind":"Printer"},{"name":"A1-UK","sku":"PF002-A-UK2","ean":"6977252425438","p":180.0,"wt":"11.64","comp":"A1","fam":"A1","kind":"Printer"},{"name":"A1-Combo-UK","sku":"PF002-A+SA005-UK2","ean":"6977252425445","p":280.0,"wt":"13.43","comp":"A1","fam":"A1","kind":"Printer"},{"name":"A1 mini-AR","sku":"PF002-M-AR","ean":"6937285501585","p":149.0,"wt":"7.976","comp":"","fam":"A1 mini","kind":"Printer"},{"name":"AMS HT-EU","sku":"SA008-EU","ean":"6937285502407","p":100.0,"wt":"2.06","comp":"ALL","fam":"AMS HT","kind":"AMS"},{"name":"AMS HT-UK","sku":"SA008-UK","ean":"6937285502414","p":100.0,"wt":"2.06","comp":"ALL","fam":"AMS HT","kind":"AMS"},{"name":"AMS HT-US","sku":"SA008-US","ean":"6937285502438","p":100.0,"wt":"2.155","comp":"ALL","fam":"AMS HT","kind":"AMS"},{"name":"AMS HT-AU","sku":"SA008-AU","ean":"6937285502445","p":100.0,"wt":"2.06","comp":"ALL","fam":"AMS HT","kind":"AMS"},{"name":"H2D Pro-AMS-Combo-HV","sku":"PF003-E+SA007+SA008-HV","ean":"6937285504708","p":2099.0,"wt":"45","comp":"H2D Pro","fam":"H2D Pro","kind":"Printer"},{"name":"P2S-Combo-UK","sku":"PF004-U+SA007-UK1","ean":"6937285508409","p":585.0,"wt":"21.48","comp":"","fam":"P2S","kind":"Printer"},{"name":"P2S-Combo-HV","sku":"PF004-U+SA007-HV","ean":"6937285506009","p":585.0,"wt":"21.36","comp":"","fam":"P2S","kind":"Printer"},{"name":"P2S-UK","sku":"PF004-U-UK","ean":"6937285506054","p":410.0,"wt":"18.25","comp":"","fam":"P2S","kind":"Printer"},{"name":"P2S-HV","sku":"PF004-U-HV","ean":"6937285506085","p":410.0,"wt":"18.115","comp":"","fam":"P2S","kind":"Printer"},{"name":"H2C-AMS-Combo-UK","sku":"PF003-C+SA007-UK","ean":"6937285510242","p":1848.0,"wt":"41.746","comp":"","fam":"H2C","kind":"Printer"},{"name":"H2D-UK","sku":"PF003-D-UK1","ean":"6937285512246","p":1239.0,"wt":"39.468","comp":"","fam":"H2D","kind":"Printer"},{"name":"H2D-HV","sku":"PF003-D-HV1","ean":"6937285512277","p":1239.0,"wt":"38.901","comp":"","fam":"H2D","kind":"Printer"},{"name":"H2D-AMS-Combo-UK","sku":"PF003-D+SA007-UK1","ean":"6937285512321","p":1399.0,"wt":"41.767","comp":"","fam":"H2D","kind":"Printer"},{"name":"H2D-AMS-Combo-HV","sku":"PF003-D+SA007-HV1","ean":"6937285512352","p":1399.0,"wt":"42.3","comp":"","fam":"H2D","kind":"Printer"},{"name":"H2S-UK","sku":"PF003-S-UK1","ean":"6937285511928","p":899.0,"wt":"37.5","comp":"","fam":"H2S","kind":"Printer"},{"name":"H2S-HV","sku":"PF003-S-HV1","ean":"6937285511959","p":899.0,"wt":"37.5","comp":"","fam":"H2S","kind":"Printer"},{"name":"H2S-AMS-Combo-UK","sku":"PF003-S+SA007-UK1","ean":"6937285511980","p":1099.0,"wt":"45.8","comp":"","fam":"H2S","kind":"Printer"},{"name":"H2S-AMS-Combo-HV","sku":"PF003-S+SA007-HV1","ean":"6937285511966","p":1099.0,"wt":"45.8","comp":"","fam":"H2S","kind":"Printer"},{"name":"H2S-Full-Combo-UK","sku":"PF003-L+SA007-UK1","ean":"6937285512062","p":1499.0,"wt":"46.15","comp":"","fam":"H2S","kind":"Printer"},{"name":"H2S-Full-Combo-HV","sku":"PF003-L+SA007-HV1","ean":"6937285512048","p":1499.0,"wt":"46.395","comp":"","fam":"H2S","kind":"Printer"},{"name":"AMS 2 Pro","sku":"SA007-N","ean":"6937285511157","p":239.0,"wt":"3.725","comp":"ALL","fam":"AMS 2 Pro","kind":"AMS"},{"name":"AMS lite","sku":"SA005-N","ean":"6937285514646","p":125.0,"wt":"3.5","comp":"A1 mini,A1","fam":"AMS lite","kind":"AMS"},{"name":"X2D-Combo-UK","sku":"PF004-P+SA007-UK","ean":"6937285508478","p":816.0,"wt":"22.18","comp":"","fam":"X2D","kind":"Printer"},{"name":"X2D-Combo-HV","sku":"PF004-P+SA007-HV","ean":"6937285508508","p":816.0,"wt":"22.27","comp":"","fam":"X2D","kind":"Printer"},{"name":"X2D-UK","sku":"PF004-P-UK","ean":"6937285510907","p":601.0,"wt":"19.98","comp":"","fam":"X2D","kind":"Printer"},{"name":"X2D-HV","sku":"PF004-P-HV","ean":"6937285511010","p":601.0,"wt":"20.196","comp":"","fam":"X2D","kind":"Printer"},{"name":"A2L Combo-UK","sku":"PF005-L+SA005-UK","ean":"6937285513380","p":399.0,"wt":"18.925","comp":"","fam":"A2L Combo","kind":"Printer"},{"name":"A2L Combo-HV","sku":"PF005-L+SA005-HV","ean":"6937285513366","p":399.0,"wt":"19.065","comp":"","fam":"A2L Combo","kind":"Printer"},{"name":"A2L-UK","sku":"PF005-L-UK","ean":"6937285513434","p":299.0,"wt":"17.075","comp":"","fam":"A2L","kind":"Printer"},{"name":"A2L-HV","sku":"PF005-L-HV","ean":"6937285513410","p":299.0,"wt":"17.216","comp":"","fam":"A2L","kind":"Printer"},{"name":"H2D LASER FULL COMBO-10W-US","sku":"PF003-M+SA007+SL001-US","ean":"6937285501509","p":1849.0,"wt":"0.791","comp":"","fam":"H2D LASER FULL COMBO","kind":"Printer"},{"name":"H2D LASER FULL COMBO-40W-US","sku":"PF003-M+SA007+SL002-US","ean":"6937285503060","p":2239.0,"wt":"1.32","comp":"","fam":"H2D LASER FULL COMBO","kind":"Printer"},{"name":"H3C-AMS-Combo-EU","sku":"PF008-P+SA017-EU","ean":"6937285518583","p":2149.0,"wt":"36","comp":"","fam":"H3C","kind":"Printer"},{"name":"H3C-AMS-Combo-UK","sku":"PF008-P+SA017-UK","ean":"6937285519986","p":2149.0,"wt":"36","comp":"","fam":"H3C","kind":"Printer"},{"name":"H3C-AMS-Combo-AU","sku":"PF008-P+SA017-AU","ean":"6937285519979","p":2149.0,"wt":"36","comp":"","fam":"H3C","kind":"Printer"},{"name":"H3C-AMS-Combo-LV","sku":"PF008-P+SA017-LV","ean":"6937285519948","p":2149.0,"wt":"36","comp":"","fam":"H3C","kind":"Printer"},{"name":"H3C-AMS-Combo-HV","sku":"PF008-P+SA017-HV","ean":"6937285519955","p":2149.0,"wt":"36","comp":"","fam":"H3C","kind":"Printer"},{"name":"H3C-AMS-Combo-CA","sku":"PF008-P+SA017-CA","ean":"6937285519627","p":2149.0,"wt":"12.19","comp":"","fam":"H3C","kind":"Printer"}];
+MACHINES.forEach((m,i)=>m.id=String(i));
+const M_BY_EAN=new Map(MACHINES.map(m=>[m.ean,m]));
+const M_BY_SKU=new Map(MACHINES.map(m=>[m.sku.toUpperCase(),m]));
+
+const MK='ilaser_mach_stock_v1', MLK='ilaser_mach_log_v1', MRK='ilaser_mach_session_v1';
+let mstock={}, mlogs=[], mdir=1, mcur=null, mrecent=[];
+try{ mstock=JSON.parse(localStorage.getItem(MK)||'{}'); }catch(e){ mstock={}; }
+try{ mlogs=JSON.parse(localStorage.getItem(MLK)||'[]'); }catch(e){ mlogs=[]; }
+try{ mrecent=JSON.parse(localStorage.getItem(MRK)||'[]'); }catch(e){ mrecent=[]; }
+const msave=()=>{ try{
+  localStorage.setItem(MK,JSON.stringify(mstock));
+  localStorage.setItem(MLK,JSON.stringify(mlogs.slice(0,800)));
+  localStorage.setItem(MRK,JSON.stringify(mrecent.slice(0,800)));
+}catch(e){} };
+
+const snsOf=m=>Object.keys(mstock[m.ean]||{});
+const mcount=m=>snsOf(m).length;
+const findSN=sn=>{ for(const e of Object.keys(mstock)){ if(mstock[e] && mstock[e][sn]) return M_BY_EAN.get(e)||{name:e,ean:e}; } return null; };
+
+const normSN=v=>String(v||'').trim().toUpperCase().replace(/\s+/g,'');
+const looksBoxSN=v=>/^B[0-9A-Z]{10,}$/.test(v);
+
+function mMatch(q){
+  q=q.trim().toLowerCase(); if(!q) return [];
+  if(M_BY_EAN.has(q)) return [M_BY_EAN.get(q)];
+  if(M_BY_SKU.has(q.toUpperCase())) return [M_BY_SKU.get(q.toUpperCase())];
+  const d=q.replace(/\D/g,'');
+  if(d.length>=12 && M_BY_EAN.has(d)) return [M_BY_EAN.get(d)];
+  return MACHINES.filter(m=>(m.name+' '+m.sku+' '+m.ean+' '+m.fam).toLowerCase().includes(q)).slice(0,12);
+}
+
+const mfb=()=>$('#mfeedback');
+function mToast(cls,title,sub,undo){
+  mfb().innerHTML=`<div class="toast ${cls}"><div class="tt"><b>${title}</b>${sub?`<span>${sub}</span>`:''}</div>
+    ${undo?'<button class="undo" id="mundo">Undo</button>':''}</div>`;
+  return $('#mundo');
+}
+
+/* ---- step 1: pick model ---- */
+function drawMatches(){
+  const q=$('#mmodel').value;
+  const list=mMatch(q);
+  $('#mmatches').innerHTML = !q ? '' : (list.length ? list.map(m=>`
+    <div class="row" data-mid="${m.id}">
+      <div class="info"><div class="nm">${esc(m.name)} <span class="pill ${m.kind==='AMS'?'nospool':'mat'}">${m.kind}</span></div>
+      <div class="meta">${esc(m.sku)} · ${m.ean}</div></div>
+      <div class="qty ${mcount(m)?'':'zero'}"><b>${mcount(m)}</b><i>held</i></div></div>`).join('')
+    : '<div class="empty">No machine matches that.</div>');
+}
+function pickModel(m){
+  mcur=m;
+  $('#m-step1').hidden=true; $('#m-step2').hidden=false;
+  $('#mcur').textContent=m.name;
+  $('#mcursku').textContent=m.sku+' · '+m.ean;
+  $('#mcount').textContent=mcount(m);
+  $('#msn').value=''; $('#msn').focus();
+  mfb().innerHTML='';
+}
+function backToPick(){
+  mcur=null;
+  $('#m-step2').hidden=true; $('#m-step1').hidden=false;
+  $('#mmodel').value=''; drawMatches(); $('#mmodel').focus();
+  mfb().innerHTML='';
+}
+
+/* ---- step 2: serials ---- */
+function mCommit(sn){
+  if(!mcur) return;
+  const where=findSN(sn);
+  if(mdir>0){
+    if(where){
+      beep(true);
+      mToast('warn','Already scanned in', esc(sn)+' is already held as '+esc(where.name));
+      return;
+    }
+    mstock[mcur.ean]=mstock[mcur.ean]||{};
+    mstock[mcur.ean][sn]=Date.now();
+    mlogs.unshift({ts:Date.now(),ean:mcur.ean,name:mcur.name,sku:mcur.sku,sn,delta:1});
+    mrecent.unshift({ean:mcur.ean,sn,d:1,t:Date.now()});
+  } else {
+    if(!where || where.ean!==mcur.ean){
+      beep(true);
+      mToast('err','Not in stock under this model', where?esc(sn)+' is held as '+esc(where.name):esc(sn)+' was never scanned in');
+      return;
+    }
+    delete mstock[mcur.ean][sn];
+    mlogs.unshift({ts:Date.now(),ean:mcur.ean,name:mcur.name,sku:mcur.sku,sn,delta:-1});
+    mrecent.unshift({ean:mcur.ean,sn,d:-1,t:Date.now()});
+  }
+  msave(); beep(false); flash();
+  if(navigator.vibrate) try{navigator.vibrate(40)}catch(e){}
+  $('#mcount').textContent=mcount(mcur);
+  const u=mToast('ok',(mdir>0?'+1 · ':'−1 · ')+esc(sn), esc(mcur.name)+' — '+mcount(mcur)+' held', true);
+  if(u) u.onclick=()=>{ mUndo(mcur.ean,sn,mdir); };
+  mDrawBatch(); mRender(); mRenderLog();
+}
+function mUndo(ean,sn,dir){
+  if(dir>0){ if(mstock[ean]) delete mstock[ean][sn]; }
+  else { mstock[ean]=mstock[ean]||{}; mstock[ean][sn]=Date.now(); }
+  mlogs=mlogs.filter(l=>!(l.sn===sn && l.ean===ean && Math.abs(Date.now()-l.ts)<600000));
+  mrecent=mrecent.filter(r=>!(r.sn===sn && r.ean===ean));
+  msave(); mfb().innerHTML='';
+  if(mcur) $('#mcount').textContent=mcount(mcur);
+  mDrawBatch(); mRender(); mRenderLog();
+}
+function mHandle(raw){
+  const v=normSN(raw);
+  if(!v) return;
+  if(!mcur){
+    const list=mMatch(v);
+    if(list.length===1){ pickModel(list[0]); return; }
+    $('#mmodel').value=v; drawMatches();
+    if(!list.length){ beep(true); mToast('err','Not a known machine EAN', esc(v)); }
+    return;
+  }
+  if(M_BY_EAN.has(v)){
+    const m=M_BY_EAN.get(v);
+    if(m.ean!==mcur.ean){ beep(false); pickModel(m);
+      mToast('warn','Switched to '+esc(m.name),'That was a model EAN, so the model changed. Scan its serials now.'); }
+    return;
+  }
+  if(looksBoxSN(v)){
+    beep(true);
+    mToast('warn','That looks like the Box SN','Box serials start with B. Scan the <b>Product SN</b> barcode instead — or tap below to count it anyway.'
+      +'<div style="margin-top:9px"><button class="undo" id="mforce">Count '+esc(v)+' anyway</button></div>');
+    const f=$('#mforce'); if(f) f.onclick=()=>mCommit(v);
+    return;
+  }
+  mCommit(v);
+}
+
+/* ---- batch ---- */
+function mDrawBatch(){
+  $('#mbatchcard').hidden = !mrecent.length;
+  const byModel={};
+  mrecent.forEach(r=>{ byModel[r.ean]=(byModel[r.ean]||0)+r.d; });
+  const models=Object.keys(byModel).filter(e=>byModel[e]!==0);
+  const tot=mrecent.reduce((s,r)=>s+r.d,0);
+  $('#msessum').textContent = mrecent.length ? models.length+' model'+(models.length===1?'':'s')+' · '+tot+' unit'+(Math.abs(tot)===1?'':'s') : '';
+  $('#mrecent').innerHTML=mrecent.slice(0,25).map(r=>{
+    const m=M_BY_EAN.get(r.ean)||{name:r.ean};
+    return `<div class="logrow"><div class="d ${r.d>0?'p':'m'}">${r.d>0?'+1':'−1'}</div>
+      <div class="n"><span style="font-family:ui-monospace,Menlo,Consolas,monospace">${esc(r.sn)}</span>
+      <span style="color:var(--mut);font-size:11px"> ${esc(m.name)}</span></div>
+      <div class="t">${new Date(r.t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+  }).join('');
+}
+
+/* ---- stock list ---- */
+const MF={instock:true,printer:false,ams:false};
+function mRender(){
+  const q=$('#mq')?$('#mq').value.trim().toLowerCase():'';
+  let rows=MACHINES.filter(m=>{
+    if(MF.printer&&m.kind!=='Printer') return false;
+    if(MF.ams&&m.kind!=='AMS') return false;
+    if(MF.instock&&mcount(m)===0) return false;
+    if(!q) return true;
+    if((m.name+' '+m.sku+' '+m.ean+' '+m.fam).toLowerCase().includes(q)) return true;
+    return snsOf(m).some(sn=>sn.toLowerCase().includes(q));
+  });
+  rows.sort((a,b)=>mcount(b)-mcount(a)||a.name.localeCompare(b.name));
+  const units=MACHINES.reduce((s,m)=>s+mcount(m),0);
+  const val=MACHINES.reduce((s,m)=>s+mcount(m)*m.p,0);
+  $('#mst-units').textContent=units;
+  $('#mst-models').textContent=MACHINES.filter(m=>mcount(m)>0).length;
+  $('#mst-value').textContent=val?Math.round(val).toLocaleString('en-US'):0;
+  $('#mlist').innerHTML=rows.length?rows.map(m=>{
+    const n=mcount(m);
+    return `<div class="row" data-mid="${m.id}">
+      <div class="info"><div class="nm">${esc(m.name)} <span class="pill ${m.kind==='AMS'?'nospool':'mat'}">${m.kind}</span></div>
+      <div class="meta">${esc(m.sku)} · ${m.ean}</div></div>
+      <div class="qty ${n?'':'zero'}"><b>${n}</b><i>held</i></div></div>`;
+  }).join('') : `<div class="empty">${MF.instock?'No machines in stock under these filters.<br>Turn off “In stock only” to browse all '+MACHINES.length+' models.':'No model matches.'}</div>`;
+}
+
+function mOpen(m){
+  const sns=snsOf(m).sort((a,b)=>mstock[m.ean][b]-mstock[m.ean][a]);
+  $('#dlgbody').innerHTML=`
+    <div style="display:flex;gap:12px;align-items:center">
+      <div style="flex:1"><h3>${esc(m.name)}</h3>
+      <div style="font-size:12.5px;color:var(--mut);margin-top:2px">${esc(m.sku)} · ${m.ean}${m.comp?' · fits '+esc(m.comp):''}</div></div>
+      <div class="qty ${sns.length?'':'zero'}"><b style="font-size:26px">${sns.length}</b><i>held</i></div></div>
+    <div class="dm">US$${m.p.toFixed(2)} each · ${m.wt} kg</div>
+    <div style="max-height:46vh;overflow:auto;margin-top:12px">
+      ${sns.length?sns.map(sn=>`<div class="logrow">
+        <div class="n" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px">${esc(sn)}</div>
+        <div class="t">${new Date(mstock[m.ean][sn]).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'})}</div>
+        <button class="undo" data-rm="${esc(sn)}">Remove</button></div>`).join('')
+       :'<div class="empty">No serials held.</div>'}
+    </div>
+    <button class="close">Close</button>`;
+  $('#dlgbody').querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{
+    const sn=b.getAttribute('data-rm');
+    delete mstock[m.ean][sn];
+    mlogs.unshift({ts:Date.now(),ean:m.ean,name:m.name,sku:m.sku,sn,delta:-1});
+    msave(); mRender(); mRenderLog(); mOpen(m);
+  });
+  $('#dlgbody .close').onclick=()=>dlg.close();
+  if(!dlg.open) dlg.showModal();
+}
+
+function mRenderLog(){
+  const el=$('#mloglist'); if(!el) return;
+  if(!mlogs.length){ el.innerHTML='<div class="empty">No movements yet</div>'; return; }
+  el.innerHTML=mlogs.slice(0,250).map(l=>{const d=new Date(l.ts);
+    return `<div class="logrow"><div class="d ${l.delta>0?'p':'m'}">${l.delta>0?'+1':'−1'}</div>
+      <div class="n"><span style="font-family:ui-monospace,Menlo,Consolas,monospace">${esc(l.sn)}</span>
+      <span style="color:var(--mut);font-size:11px"> ${esc(l.name||'')}</span></div>
+      <div class="t">${d.toLocaleDateString('en-GB',{month:'2-digit',day:'2-digit'})} ${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+  }).join('');
+}
+
+/* ---- machine exports ---- */
+const M_HEAD=['Model','SKU','EAN','Serial','Date in'];
+function mStockRows(){
+  const out=[M_HEAD];
+  MACHINES.forEach(m=>snsOf(m).forEach(sn=>out.push([m.name,m.sku,m.ean,sn,fmtD(mstock[m.ean][sn])])));
+  return out;
+}
+function mBatchRows(){
+  const out=[['Model','SKU','EAN','Serial','Direction','Time']];
+  mrecent.forEach(r=>{const m=M_BY_EAN.get(r.ean)||{name:r.ean,sku:'',ean:r.ean};
+    out.push([m.name,m.sku,m.ean,r.sn,r.d>0?'IN':'OUT',fmtD(r.t)]);});
+  return out;
+}
+</script>
+
+
+<script>
+/* =================== MODE SWITCH + WIRING =================== */
+const TABS={
+  filament:[['scan','Scan'],['find','Find'],['stock','Stock'],['log','Log']],
+  machine:[['m-scan','Receive'],['m-stock','Stock'],['m-log','Log']]
+};
+let APPMODE=null;
+const FSEC=['s-scan','s-find','s-stock','s-log'], MSEC=['m-scan','m-stock','m-log'];
+
+function showSection(id){
+  [...FSEC,...MSEC,'chooser'].forEach(x=>{ const el=document.getElementById(x); if(el) el.classList.toggle('on', x===id); });
+}
+function setMode(m){
+  stopCam();
+  APPMODE=m;
+  $('#tabs').hidden=false; $('#modebtn').hidden=false;
+  $('#apptitle').textContent = m==='machine' ? 'Machine Stock' : 'Filament Stock';
+  $('#modebtn').textContent = m==='machine' ? 'Filament' : 'Machines';
+  $('#tabs').innerHTML=TABS[m].map(([id,label],i)=>
+    `<button class="tab" role="tab" aria-selected="${i===0}" data-sec="${id==='scan'?'s-scan':id==='find'?'s-find':id==='stock'?'s-stock':id==='log'?'s-log':id}">${label}</button>`).join('');
+  const first=TABS[m][0][0];
+  showSection(first==='scan'?'s-scan':first);
+  moveCam();
+  if(m==='machine'){ mRender(); mRenderLog(); mDrawBatch(); drawMatches(); if(!mcur) backToPick(); }
+  else { render(); renderLog(); renderFind(); drawRecent(); }
+  try{ localStorage.setItem('ilaser_mode', m); }catch(e){}
+  window.scrollTo(0,0);
+}
+function moveCam(){
+  const cw=$('#camwrap'); if(!cw) return;
+  const slot = APPMODE==='machine' ? $('#m-camslot') : $('#f-camslot');
+  if(slot && cw.parentElement!==slot) slot.appendChild(cw);
+}
+$('#tabs').onclick=e=>{
+  const t=e.target.closest('.tab'); if(!t) return;
+  [...$('#tabs').children].forEach(x=>x.setAttribute('aria-selected', x===t));
+  const sec=t.dataset.sec;
+  stopCam(); showSection(sec); moveCam();
+  if(sec==='s-scan') input.focus();
+  if(sec==='s-find') $('#fq').focus();
+  if(sec==='s-stock') $('#q').focus();
+  if(sec==='m-scan'){ (mcur?$('#msn'):$('#mmodel')).focus(); }
+  if(sec==='m-stock') $('#mq').focus();
+  window.scrollTo(0,0);
+};
+$('#modebtn').onclick=()=>setMode(APPMODE==='machine'?'filament':'machine');
+document.querySelectorAll('.pickcard').forEach(c=>c.onclick=()=>setMode(c.dataset.mode));
+
+/* route scans by mode */
+const _handle=handle;
+handle=function(raw,how){ if(APPMODE==='machine') return mHandle(raw); return _handle(raw,how); };
+
+/* machine inputs */
+$('#mmodel').addEventListener('input',drawMatches);
+$('#mmodel').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault();
+  const v=$('#mmodel').value; const list=mMatch(v);
+  if(list.length===1) pickModel(list[0]); else if(!list.length){ beep(true); mToast('err','No machine matches',esc(v)); } }});
+$('#mmatches').onclick=e=>{ const r=e.target.closest('[data-mid]'); if(r) pickModel(MACHINES[Number(r.dataset.mid)]); };
+$('#msn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault();
+  const v=$('#msn').value; $('#msn').value=''; if(v.trim()) mHandle(v); }});
+$('#mnext').onclick=backToPick;
+$('#mdone').onclick=()=>{ backToPick();
+  if(mrecent.length) mToast('ok','Batch still listed below','Export it, then tap End batch to clear.'); };
+$('#mdirseg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
+  mdir=Number(b.dataset.d); [...$('#mdirseg').children].forEach(x=>x.setAttribute('aria-pressed',x===b)); $('#msn').focus(); };
+
+$('#mfilters').onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return;
+  const f=b.dataset.f; MF[f]=!MF[f];
+  if(f==='printer'&&MF.printer) MF.ams=false;
+  if(f==='ams'&&MF.ams) MF.printer=false;
+  [...$('#mfilters').children].forEach(c=>c.setAttribute('aria-pressed',!!MF[c.dataset.f]));
+  mRender(); };
+$('#mq').addEventListener('input',mRender);
+$('#mlist').onclick=e=>{ const r=e.target.closest('[data-mid]'); if(r) mOpen(MACHINES[Number(r.dataset.mid)]); };
+
+$('#mx-csv').onclick=()=>download('machine-batch-'+stamp()+'.csv',toCSV(mBatchRows()));
+$('#mx-copy').onclick=e=>copyRows(mBatchRows(),e.target);
+$('#mx-clear').onclick=()=>{ if(!mrecent.length) return;
+  if(confirm('End this batch? The list clears; the serials stay in stock.')){ mrecent=[]; msave(); mDrawBatch(); mfb().innerHTML=''; } };
+$('#mexp').onclick=()=>download('machine-serials-'+stamp()+'.csv',toCSV(mStockRows()));
+$('#mexp-copy').onclick=e=>copyRows(mStockRows(),e.target);
+$('#mimp').onchange=ev=>{
+  const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+    const lines=String(rd.result).replace(/^\uFEFF/,'').trim().split(/\r?\n/);
+    const hdr=lines[0].split(',').map(x=>x.trim());
+    const iE=hdr.indexOf('EAN'), iS=hdr.indexOf('Serial');
+    if(iE<0||iS<0) throw new Error('CSV needs EAN and Serial columns');
+    const ns={}; let n=0;
+    lines.slice(1).forEach(ln=>{ const c=ln.split(',');
+      const ean=(c[iE]||'').trim().replace(/^"|"$/g,''), sn=normSN((c[iS]||'').replace(/^"|"$/g,''));
+      if(M_BY_EAN.has(ean)&&sn){ ns[ean]=ns[ean]||{}; ns[ean][sn]=Date.now(); n++; } });
+    mstock=ns; msave(); mRender(); mRenderLog();
+    mToast('ok','Restored '+n+' serials','');
+  }catch(err){ alert('Restore failed: '+err.message); } };
+  rd.readAsText(f);
+};
+
+/* camera hint text per mode */
+const _startCam=startCam;
+startCam=function(){ $('#camsg').textContent = APPMODE==='machine'
+  ? 'Point at the EAN barcode to pick the model, then at each Product SN'
+  : 'Point at the QR on a carton or the barcode on a single spool — it reads continuously';
+  return _startCam(); };
+$('#startcam').onclick=()=>startCam();
+
+/* boot: always ask which side */
+showSection('chooser');
+$('#tabs').hidden=true; $('#modebtn').hidden=true;
+mRender(); mRenderLog(); mDrawBatch();
+</script>
+
+</body></html>
